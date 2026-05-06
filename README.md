@@ -2,7 +2,7 @@
 
 **Filipino-Chinese Mahjong: Rules, Scoring & Hand Calculator**
 
-A web resource for the 16-tile Taiwanese-derived Mahjong style played in the Philippine Chinese community — one of the least-documented Mahjong variants online. Built to preserve it.
+A web resource for the 16-tile Taiwanese-derived Mahjong style played in the Filipino-Chinese community, and not very well documented online. Built to preserve it.
 
 🀄 **Live site:** [mahjongscore.me](https://mahjongscore.me) *(domain pending)*
 📋 **Changelog:** [CHANGELOG.md](./CHANGELOG.md)
@@ -16,8 +16,8 @@ Most Mahjong resources online cover Hong Kong or Japanese Riichi style. This sit
 - You start with **16 tiles** and need 17 to win (5 sets + 1 pair)
 - The scoring system uses **points + tai (multipliers)** rather than fan
 - Flowers and seasons add individual points, and your own tile adds a tai
-- Special hands include **ping-oh** (all-run, 300/600), **buan-oh** (limit hand, 600/1200), and a minimum win of **50/100** (go-ki-si-pa)
-- The dealer pays and receives **double**
+- Like HK style, there are limit and special hands, however they are slightly different. In addition, minimum scoring hands are given a flat payout.
+- The banker pays and receives **double**
 
 ---
 
