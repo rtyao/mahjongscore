@@ -1,39 +1,116 @@
-# mahjongscore
-Mahjong Scoring Calculator and Rules Guide - Taiwanese/Filipino Chinese Variant
+# Mahjong Score
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**Filipino-Chinese Mahjong: Rules, Scoring & Hand Calculator**
 
-## Getting Started
+A web resource for the 16-tile Taiwanese-derived Mahjong style played in the Philippine Chinese community — one of the least-documented Mahjong variants online. Built to preserve it.
 
-First, run the development server:
+🀄 **Live site:** [mahjongscore.me](https://mahjongscore.me) *(domain pending)*
+📋 **Changelog:** [CHANGELOG.md](./CHANGELOG.md)
+
+---
+
+## What This Is
+
+Most Mahjong resources online cover Hong Kong or Japanese Riichi style. This site covers the **Filipino-Chinese variant** — also called Taiwanese-style — which differs in key ways:
+
+- You start with **16 tiles** and need 17 to win (5 sets + 1 pair)
+- The scoring system uses **points + tai (multipliers)** rather than fan
+- Flowers and seasons add individual points, and your own tile adds a tai
+- Special hands include **ping-oh** (all-run, 300/600), **buan-oh** (limit hand, 600/1200), and a minimum win of **50/100** (go-ki-si-pa)
+- The dealer pays and receives **double**
+
+---
+
+## Features
+
+- **Score Calculator** — build a hand tile by tile, get the full score breakdown with rule explanations
+- **Ping-oh detection** — automatically detects all-run hands (and near-misses)
+- **Limit hand detection** — buan-oh threshold, minimum hand floor
+- **Flat bonus tracking** — kang bonuses, self-draw bonuses shown separately
+- **Rules pages** — in progress, beginner-friendly
+
+---
+
+## Running Locally
+
+You need Node.js (v18+). If you use nvm: `nvm use 24` or similar.
 
 ```bash
+git clone https://github.com/rtyao/mahjongscore.git
+cd mahjongscore
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To build for production:
+```bash
+npm run build
+npm run start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── types/
+│   └── mahjong.ts          # All TypeScript types (Tile, TileGroup, ScoreResult, etc.)
+├── lib/
+│   ├── tiles.ts            # All 42 unique tile definitions + helper functions
+│   ├── scoring.ts          # The scoring engine — points, tai, formula, special hands
+│   └── handDetection.ts    # Hand validation and auto-grouping algorithm
+├── components/
+│   ├── MahjongTile.tsx     # Visual tile component (renders all suit types)
+│   ├── Navbar.tsx          # Responsive navigation
+│   └── Footer.tsx          # Footer with links
+└── app/
+    ├── page.tsx            # Home
+    ├── calculator/         # Score calculator (main feature)
+    ├── rules/              # Rules guide (in progress)
+    ├── about/              # About the project
+    └── suggest/            # Suggestion / correction form
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+| Thing | What |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org) (App Router, TypeScript) |
+| Styling | [Tailwind CSS v4](https://tailwindcss.com) + CSS variables |
+| Hosting | GitHub Pages (static export) |
+| Forms | [Formspree](https://formspree.io) (contact/suggestions) |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+No backend. Everything runs in the browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Contributing
+
+All contributions welcome — code, rule corrections, translations, tile art.
+
+**If you know this Mahjong style and something is wrong:** open an [Issue](https://github.com/rtyao/mahjongscore/issues) or use the [suggestion form](https://mahjongscore.me/suggest) on the site.
+
+**If you want to contribute code:** see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+**Rules content** is the highest-value contribution right now. See the "In progress" sections on the Rules page — any verified information about:
+- Mixed flush / full flush scoring
+- Full list of limit hands
+- Four-kang rule
+- Regional variations
+
+---
+
+## Status
+
+This project is **actively in development**. Content is being verified with family and is not guaranteed to be complete or accurate for every household's rules. See the [Changelog](./CHANGELOG.md) for version history.
+
+---
+
+## License
+
+MIT — use it, fork it, build on it.

@@ -1,12 +1,51 @@
+/**
+ * scoring.ts — Filipino-Chinese Mahjong scoring engine
+ *
+ * FORMULA (applied in calculateScore):
+ *   1. Sum base points from each set, flowers, seasons, and win bonuses
+ *   2. rawScore = ceil(basePoints × 4 / 10) × 10   (round up to nearest 10)
+ *   3. score = rawScore + 20  (if mahjong win)
+ *   4. score = score × 2^tai  (tai = multiplier count)
+ *   5. Floor at 50 (go-ki-si-pa), cap at 600 (buan-oh)
+ *   6. Flat bonuses (kang types, zi-mo) are added AFTER and paid separately by each player
+ *
+ * SPECIAL CASE — ping-oh: if basePoints === 0, skip formula → 300 flat (600 for dealer)
+ *
+ * BASE POINTS per set:
+ *   Honor/terminal pong:  1 pt (×2 if concealed)
+ *   Suited pong:          0.5 pt (×2 if concealed)
+ *   Kang = pong score × 4
+ *   Chow:                 0 pt always
+ *   Pair:                 0.5 pt if dragon, own wind, or terminal; else 0
+ *   Flower/season:        1 pt each
+ *
+ * TAI (multipliers) — each tai doubles the score (×2^n total):
+ *   Any dragon pong/kang:     +1 tai
+ *   Own wind pong/kang:       +1 tai
+ *   Own flower tile:          +1 tai
+ *   Own season tile:          +1 tai
+ *   Complete flower set (×4): +2 tai
+ *   Complete season set (×4): +2 tai
+ *
+ * FLAT BONUSES (each player pays separately, outside the formula):
+ *   Revealed kang:  +100
+ *   Hidden kang:    +200
+ *   TTS kang:       +400 (held all 4 from the deal)
+ *   Complete flower/season set: +100
+ *   Self-draw (zi-mo): +100
+ */
+
 import type { CalculatorState, ScoreResult, ScoreBreakdownItem, FlatBonus, KangType } from '@/types/mahjong';
 import { getTile, windToValue } from './tiles';
 
+// Honor (winds/dragons) and terminal (1 or 9) pongs are worth 1 pt; suited middle tiles are 0.5 pt
 function getPongBasePoints(tileId: string): number {
   const tile = getTile(tileId);
   if (tile.isHonor || tile.isTerminal) return 1;
   return 0.5;
 }
 
+// Kang = pong score × 4. Concealed always doubles the pong base first.
 function getSetPoints(tileId: string, type: 'pong' | 'kang', concealed: boolean): number {
   let base = getPongBasePoints(tileId);
   if (concealed) base *= 2;
@@ -14,6 +53,7 @@ function getSetPoints(tileId: string, type: 'pong' | 'kang', concealed: boolean)
   return base;
 }
 
+// Tai earned from a pong/kang: dragons always give 1; winds give 1 only if it's your seat wind
 function getSetTai(tileId: string, seatWindValue: number): number {
   const tile = getTile(tileId);
   if (tile.suit === 'dragon') return 1;
