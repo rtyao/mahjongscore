@@ -83,14 +83,17 @@ This is my first time setting this up, and to be honest I'm okay with the direct
   - How do I fix the tile spacing? It feels a little too distant from each other when irl the tiles stack and align very nicely with each other
   - I would like to have a floating tray of the tiles that moves with the scroll of the page- how do you know what your tiles are? Can they be displayed and add a tile counter amount given that you shouldn't have less than 16 tiles.
 - Flowers and seasons should be in the step 2, they are part of the full mahjong tileset. On the tray they can be maybe displayed smaller and above the row of tiles in hand
+- Can I remove tiles easier? Not from step 3 but maybe putting a small x on the tile itself to remove
+- Cannot clear hand quickly
 - Hand builder is too manual - need auto-grouping from a tile pool
   - In addition to this, the current state of tiles is manually assigning each and every one of them a role. In step 3, it asks to organize the sets, without recognizing that it should have auto-sorted. The individual marking as pong/kang/chow can lead to some inconsistent scoring. If I mark three items as pong it currently scores them all as different pongs.
+  - System does not detect winning through middle tile of chow
 - Chows should not be displayed on the scoring
 - The tile visuals are functional but not beautiful yet
 - Rules page is all placeholder - most important content gap
 - Mobile experience needs testing and tuning
 - No way to share a hand result
-- Too long of a scroll- 
+- Too long of a scroll for the calculator. Need to find a way to be mobile friendly as well.
 
 ---
 
