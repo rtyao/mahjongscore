@@ -5,11 +5,10 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [v0.1.0] — 2026-05-05 — First Build
+## [v0.1.0] - 2026-05-05 - First Build
 
 ### The honest version
-This is a first pass. The bones are right, the design direction is set,
-and the scoring engine works. A lot of things need polish.
+This is my first time setting this up, and to be honest I'm okay with the direction so far, structure and design. The machine works, but for me I think there's a lot of good items that I wasn't aware of/in my perspective until I saw it.
 
 ### What's in this version
 
@@ -28,8 +27,8 @@ and the scoring engine works. A lot of things need polish.
 
 **Calculator UI**
 - Tile picker grid (Characters, Bamboo, Circles, Winds, Dragons)
-- Count badges — shows how many of each tile are in hand
-- Group builder — set type (Pong/Chow/Kang/Pair), concealed toggle, kang type
+- Count badges - shows how many of each tile are in hand
+- Group builder - set type (Pong/Chow/Kang/Pair), concealed toggle, kang type
 - Tap any tile to mark it as the ★ winning tile
 - Flower/season picker (separate from main hand)
 - Seat wind selector (East/South/West/North)
@@ -41,7 +40,7 @@ and the scoring engine works. A lot of things need polish.
 
 **Pages**
 - Home with hero tiles, intro text, quick stats, feature cards
-- Rules page (structure only — content is all placeholder)
+- Rules page (structure only - content is all placeholder)
 - About page
 - Suggest a Correction page (Formspree form, GitHub Issues link)
 - Navbar (desktop + mobile hamburger)
@@ -59,12 +58,12 @@ and the scoring engine works. A lot of things need polish.
 
 ### What's missing / known issues
 
-- Rules page content is entirely placeholder — no actual rule text yet
+- Rules page content is entirely placeholder - no actual rule text yet
 - Tile art is text/shape-based; no illustrated tile designs yet
 - No share-a-hand feature (URL encoding)
 - No hand auto-detection (must manually assign tiles to sets)
-- CalculatorClient.tsx is too long (430 lines) — needs splitting
-- Formspree form ID is a placeholder — suggestions form doesn't send yet
+- CalculatorClient.tsx is too long (430 lines) - needs splitting
+- Formspree form ID is a placeholder - suggestions form doesn't send yet
 - No GitHub Pages deployment configured yet
 - No domain set up yet (mahjongscore.me)
 - Missing scoring rules: mixed flush, full flush, full limit hand list, four-kang rule
@@ -72,17 +71,26 @@ and the scoring engine works. A lot of things need polish.
 - Special hands (all-dragons, all-winds) not auto-detected yet
 
 ### What I liked about v0.1
-- The color palette came out exactly right
-- Scoring engine is solid — the formula, ping-oh detection, and flat bonuses work correctly
+- Scoring engine is solid - the formula, ping-oh detection, and flat bonuses work correctly
 - The breakdown table with tappable rules is the right UX direction
 - MahjongTile renders clearly at all sizes
+- Structure is great start so far, and it would have burned through three of my five brain cells to know how to arrange everything
 
 ### What I didn't like about v0.1
-- Hand builder is too manual — need auto-grouping from a tile pool
+– I wanted the aesthetics and design to be cutesy and easy to understand, and while the colors were spot on, maybe it might need a redesign. It doesn't feel very human at the moment, and too minimalistic for enjoyment. Mahjong is fun, it's lively. Like you complain, you yell, you laugh, and so I want to make it more welcoming.
+- Want to rewrite the text and descriptions to be more me. There are also grammar / spacing errors 
+- The step 2 pick tiles has two items not working- the by suit/all, and add empty group (what is this?)
+  - How do I fix the tile spacing? It feels a little too distant from each other when irl the tiles stack and align very nicely with each other
+  - I would like to have a floating tray of the tiles that moves with the scroll of the page- how do you know what your tiles are? Can they be displayed and add a tile counter amount given that you shouldn't have less than 16 tiles.
+- Flowers and seasons should be in the step 2, they are part of the full mahjong tileset. On the tray they can be maybe displayed smaller and above the row of tiles in hand
+- Hand builder is too manual - need auto-grouping from a tile pool
+  - In addition to this, the current state of tiles is manually assigning each and every one of them a role. In step 3, it asks to organize the sets, without recognizing that it should have auto-sorted. The individual marking as pong/kang/chow can lead to some inconsistent scoring. If I mark three items as pong it currently scores them all as different pongs.
+- Chows should not be displayed on the scoring
 - The tile visuals are functional but not beautiful yet
-- Rules page is all placeholder — most important content gap
+- Rules page is all placeholder - most important content gap
 - Mobile experience needs testing and tuning
 - No way to share a hand result
+- Too long of a scroll- 
 
 ---
 
