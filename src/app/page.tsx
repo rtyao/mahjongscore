@@ -64,21 +64,20 @@ export default function HomePage() {
           </h2>
           <div className="prose max-w-none" style={{ color: 'var(--color-stone)' }}>
             <p className="text-base leading-relaxed mb-4">
-              Filipino-Chinese Mahjong (also called Taiwanese-style Mahjong) is the dominant style
-              played in Philippine Chinese communities. It differs from the more widely known
-              Hong Kong style in a few key ways — most notably, you start with{' '}
+              Filipino-Chinese Mahjong (closely related to Taiwanese-style Mahjong) is the dominant style
+              played in Philippine Chinese communities. It differs from the more widely known Hong Kong
+              style in a few key ways - most notably, you start with{' '}
               <strong style={{ color: 'var(--color-ink)' }}>16 tiles</strong> instead of 13,
               and need 17 to win: 5 sets and a pair.
             </p>
             <p className="text-base leading-relaxed mb-4">
-              The scoring system is also quite different. Points come from the types of sets you make —
-              pongs, kangs, and even flowers and seasons — and are multiplied by{' '}
+              The scoring system is also quite different. Points come from the types of sets you make -
+              pongs (pung), kangs (kong), and even flowers and seasons - and are multiplied by{' '}
               <strong style={{ color: 'var(--color-ink)' }}>tai</strong> (doublers) earned from
-              honor tiles and your seat wind. A pure run hand (ping-oh) with zero points is a special
-              case worth a flat 300.
+              honor tiles and your seat wind.
             </p>
             <p className="text-base leading-relaxed" style={{ color: 'var(--color-mist)' }}>
-              [More detail coming — this style has a rich history and we're still documenting it properly.]
+              [More detail coming - this style has a rich history and we&apos;re still documenting it properly.]
             </p>
           </div>
 

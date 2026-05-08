@@ -2,7 +2,7 @@ import type { Tile, Suit } from '@/types/mahjong';
 import { getTile, getTileBySuitValue } from './tiles';
 
 interface GroupResult {
-  type: 'pong' | 'chow';
+  type: 'pong' | 'chow' | 'kang';
   tileIds: string[];
 }
 
@@ -27,15 +27,16 @@ function findSets(tileIds: string[]): GroupResult[] | null {
   const firstId = sorted[0];
   const first = getTile(firstId);
 
-  // Try pong first
   const matching = sorted.filter(id => id === firstId);
-  if (matching.length >= 3) {
-    const remaining = removeTiles(sorted, [firstId, firstId, firstId]);
+
+  // Try kang first (4 of a kind)
+  if (matching.length >= 4) {
+    const remaining = removeTiles(sorted, [firstId, firstId, firstId, firstId]);
     const rest = findSets(remaining);
-    if (rest !== null) return [{ type: 'pong', tileIds: [firstId, firstId, firstId] }, ...rest];
+    if (rest !== null) return [{ type: 'kang', tileIds: [firstId, firstId, firstId, firstId] }, ...rest];
   }
 
-  // Try chow (only for suited non-honor tiles)
+  // Try chow before pong — prevents greedy pong from consuming tiles needed for runs
   if (!first.isHonor && first.suit !== 'flower' && first.suit !== 'season') {
     const mid = getTileBySuitValue(first.suit as Suit, first.value + 1);
     const end = getTileBySuitValue(first.suit as Suit, first.value + 2);
@@ -48,6 +49,13 @@ function findSets(tileIds: string[]): GroupResult[] | null {
         if (rest !== null) return [{ type: 'chow', tileIds: [firstId, midId, endId] }, ...rest];
       }
     }
+  }
+
+  // Try pong
+  if (matching.length >= 3) {
+    const remaining = removeTiles(sorted, [firstId, firstId, firstId]);
+    const rest = findSets(remaining);
+    if (rest !== null) return [{ type: 'pong', tileIds: [firstId, firstId, firstId] }, ...rest];
   }
 
   return null;

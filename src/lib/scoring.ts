@@ -123,15 +123,12 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     if (!tileId) continue;
 
     if (group.type === 'chow') {
-      // Detect kanchan: winning tile is in middle position of this chow
+      if (group.instanceIds.length !== 3) continue;
       let kanchan = false;
       if (winningGroup?.id === group.id && winningInstanceId) {
         const pos = group.instanceIds.indexOf(winningInstanceId);
         kanchan = pos === 1;
       }
-      const tileIds = group.instanceIds.map(id => state.instances.find(i => i.instanceId === id)?.tileId ?? '');
-      const label = tileIds.map(id => { try { return getTile(id).englishLabel; } catch { return '?'; } }).join('-');
-      breakdown.push({ label: `Chow ${label}`, points: 0, tai: 0, explanation: 'Sequences score 0 points.' });
       if (kanchan) {
         basePoints += 0.5;
         breakdown.push({ label: 'Won with middle tile (Kanchan)', points: 0.5, tai: 0, explanation: 'Winning by completing the middle of a sequence adds 0.5 points.' });
@@ -140,6 +137,7 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     }
 
     if (group.type === 'pong') {
+      if (group.instanceIds.length !== 3) continue;
       const pts = getSetPoints(tileId, 'pong', group.concealed);
       const t = getSetTai(tileId, seatWindValue);
       basePoints += pts;
@@ -148,6 +146,7 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     }
 
     if (group.type === 'kang') {
+      if (group.instanceIds.length !== 4) continue;
       const pts = getSetPoints(tileId, 'kang', group.concealed);
       const t = getSetTai(tileId, seatWindValue);
       basePoints += pts;
@@ -157,9 +156,10 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     }
 
     if (group.type === 'pair') {
+      if (group.instanceIds.length !== 2) continue;
       const pts = getPairPoints(tileId, seatWindValue);
       basePoints += pts;
-      breakdown.push({ label: `Pair of ${getTile(tileId).englishLabel}`, points: pts, tai: 0, explanation: pairExplanation(tileId, seatWindValue) });
+      if (pts > 0) breakdown.push({ label: `Pair of ${getTile(tileId).englishLabel}`, points: pts, tai: 0, explanation: pairExplanation(tileId, seatWindValue) });
       if (winningGroup?.id === group.id) {
         basePoints += 0.5;
         breakdown.push({ label: 'Won with pair', points: 0.5, tai: 0, explanation: 'Completing the pair as the winning tile adds 0.5 points.' });
@@ -236,9 +236,16 @@ export function calculateScore(state: CalculatorState): ScoreResult {
   const allSetsAreChowsOrPair = state.groups.every(g => g.type === 'chow' || g.type === 'pair' || g.type === 'incomplete');
   if (!isPingOh && allSetsAreChowsOrPair && basePoints > 0 && basePoints <= 1.5) {
     nearPingOh = true;
-    if (state.flowers.length > 0 || state.seasons.length > 0) nearPingOhReason = 'a flower or season tile';
-    else if (state.isSelfDraw) nearPingOhReason = 'self-draw bonus';
-    else nearPingOhReason = 'a win condition bonus';
+    const reasons: string[] = [];
+    if (state.flowers.length > 0 || state.seasons.length > 0) reasons.push('bonus tile(s)');
+    if (state.isSelfDraw) reasons.push('self-draw');
+    const winningGroup2 = winningGroup;
+    if (winningGroup2?.type === 'pair') reasons.push('win-by-pair bonus');
+    const winningInChow = winningGroup2?.type === 'chow' && winningInstanceId
+      ? winningGroup2.instanceIds.indexOf(winningInstanceId) === 1
+      : false;
+    if (winningInChow) reasons.push('kanchan bonus');
+    nearPingOhReason = reasons.length > 0 ? reasons.join(' and ') : 'a scoring bonus';
   }
 
   return {
