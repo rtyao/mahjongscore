@@ -5,80 +5,41 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [v0.3.0] - in progress
+## [v0.2.1] - 2026-05-08 - Logic fixes & step reorder
 
 ### Reflection
 
 One of the things I learned about creating a project is that there are so many intricacies with both mahjong, and the website building. I'm understanding slowly how to talk and communicate as part of this project, and I am identifying the gaps in my perception - for a lack of better term, this means what did I not see from before that's a problem now? Having a bird's eye view means you might miss the small details, which I am focusing on to make sure this calculator works well.
 
----
+### What changed
 
-### What I liked
+**Calculator**
+- Steps reordered - tiles first (step 1), build sets (step 2), then setup + win conditions (steps 3-4)
+- Seat wind buttons now show Chinese characters (東南西北) above the English label
+- Dealer changed from two-button toggle to a checkbox
+- Score panel always shows both values - your score and what the other side pays, regardless of role
 
-- The floating tile tray is great. I love it a lot, helps with the functionality. Would love it to be bigger / more visible because it's the same size as the tiles right now, and on the computer it's small. But it does not clip and shows everything which is great.
-- Love the clear hand on both the floating tray and the bottom - it helps with the functionality.
-- The re-arrangement of the tiles (adding the flower tiles to step 2, merging dragons and winds to form special tiles) is really a great change visually and makes it clearer for the audience. One thing I noticed is that I really like the "All" display view ahead of the "By Suit" section - maybe want to do that first, cuz rn the default is "By Suit" then "All."
-- The auto-detect for sets has been great.
-- Seems like there was a mini-patch and it did fix the buan-oh problem - it shows the calculations and says "capped at 600" which is so far good.
-- Ping-oh explanation for edge cases (where there were more than 1 reason for not getting it) is displayed well.
+**Scoring**
+- 0-point pairs no longer shown in the score breakdown
+- Winning tile is now required before you can calculate a winning hand
+- Blocked a logic contradiction: can't mark a winning tile as concealed and also claim win by discard
 
----
+**Hand detection**
+- Kang (4-of-a-kind) now detected by auto-detect - hands with kangs (17+n tiles) will resolve correctly
+- Fixed greedy detection bug: overlapping run hands like 1/2/3 + 2/3/4 + 3/4/5 now sort correctly instead of failing
 
-### Scoring & Logic
+*The chow edge case was a priority sort problem - the algorithm was trying pong before chow on every tile, so three 3s would "consume" the 3s as a pong and leave {4,4,5} with no valid decomposition. Swapping to chow-first fixed it.*
 
-**Kang - still broken, needs full fix:**
+### What Claude noticed can improve (still open)
+- Manual kang grouping still needs a UI solution - "Add group manually" still creates an empty group with no way to put tiles into it
+- Auto-detect still fails on 16-tile non-winning hands
+- Limit hands not yet implemented
 
-- When a player (regardless if they won) has a kang, the amount of sets to win are the same yet the final tile amount will be +1, so for n kangs (up to 5 cuz 5 sets) total amount of tiles is 16+n, or 17+n for win. Right now, the system does not allow more than 17 tiles to be placed for winning or 16 for losing hand, and cannot detect kang as well - currently says "cannot detect sets."
-- Manual grouping does not work either. It just says "what type of set" without putting any tiles into it, so there's nowhere to go from there.
-
-*The root problem: `detectHand` in `handDetection.ts` never attempts kang - only pong and chow. And the "Add group manually" button creates an empty group with no UI to assign tiles into it. Two separate fixes needed.*
-
-**Other logic issues:**
-
-- The system on step 3 still has trouble detecting non-finished hands for losing - a non-winning hand is not computable at the moment. Would be ideal to identify all finished sets and go from there, since it can't detect a hand when losing.
-- When a user selects their win condition on step 4, selecting the winning tile is not mandatory for winners. It should be.
-- There's a logic gap: currently able to select the winning tile from a concealed set and click "win from discard." Logically, if you steal a tile to win, it is not concealed anymore.
-- Auto-detect: wondering about edge cases where multiple chows might get incorrectly detected as a pong - e.g. 1/2/3, 2/3/4, 3/4/5, would it set a pong of 3?
-- Can the pair, if it's a 0-pointer, not be displayed in the scoring breakdown?
-
-*Confirmed on the chow edge case - the detection algorithm is greedy and tries pong before chow on every tile. A hand like 1/2/3 + 2/3/4 + 3/4/5 would fail: it tries pong of 3 first, leaves {4,4,5} which can't form a set, and returns null instead of backtracking correctly. Fix: try chow before pong, or restructure the search.*
-
-*The 0-point pair: one-line fix in `scoring.ts` - just filter it from the breakdown if `pts === 0`.*
-
----
-
-### Step 1 - Setup (QoL)
-
-- Can we put the Chinese wind character for each seat?
-- For the dealer role button, maybe make it a checkbox instead. So it will have some variety.
-- The score display for dealer vs non-dealer is a little weird. Maybe the dealer score size should be bigger.
-- Would like the dealer payout shown regardless of position - it shows how much the dealer pays out to this person.
-- Thinking of doing a carousel/rotating choice for seat wind on mobile, but probably later when we push a mobile-friendly update.
-
-*Currently the dealer score only appears if `isDealer` is true. Should always show both so you know the payout in either direction.*
-
----
-
-### Layout & Structure
-
-- Maybe: can setup and win-con be in the last part? I think users would like to immediately select their tiles, and then all the buttons will be part of it later. So although logically the setup is before the tiles in the game, let them select tiles first and then move towards the scoring adjustments.
-
-*Agreed - step 1 (Setup) and step 4 (Win Conditions) are both configuration. Tiles are the action. Restructuring to: tiles first, then setup + win-con before calculate, would feel more natural.*
-
----
-
-### Known issues / coming in this update
-
-- Kang support - tile count logic + detection + manual grouping workflow
-- Auto-detect chow edge case - greedy pong-first algorithm fails on some valid hands
-- Non-winning hand detection
-- Concealed set + win from discard validation
-- Winning tile required for winning hands
-- 0-point pair hidden from breakdown
-- Default tile picker view changed to "All"
-- Dealer payout always visible
-- Chinese wind characters in step 1
-- Step reordering - tiles first
+### What you (Caleb) noticed can improve (still open)
+- Tray is small on desktop, could be more visible
+- Near ping-oh currently only shows one reason when multiple apply
+- Limit hands: 4 winds and all-dragon hands should auto-score at 600
+- Non-winning hand detection - should identify finished sets and show partial scoring
 
 ---
 
@@ -111,12 +72,14 @@ One of the things I learned about creating a project is that there are so many i
 - Auto-detect still fails on 16-tile non-winning hands
 - Hydration mismatch from browser extensions (cosmetic, but worth fixing)
 - Tray tile badges clip on top edge - needs padding fix
+- *Auto-detect chow edge case: greedy pong-first algorithm fails on hands like 1/2/3 + 2/3/4 + 3/4/5 - tries pong of 3, can't resolve remainder, returns null*
+- *0-point pairs showing in breakdown even when they contribute nothing*
 
 ### What you (Caleb) liked about v0.2
 - Calculator works much better, autosort is doing wonders
 - Bottom tray and Clear Hand are very useful
 - Scoring system is much cleaner
-- Ping-oh detection is working well
+- Ping-oh detection is working well - edge cases where more than 1 reason applies are displayed well
 - By Suit / All toggle change is great
 
 ### What you (Caleb) noticed can improve
@@ -131,12 +94,13 @@ One of the things I learned about creating a project is that there are so many i
 - Winds and Dragons could share one row
 - Near ping-oh message only mentions the first reason when multiple conditions apply
 - Step 1 seat wind buttons could show Chinese characters alongside English
+- Dealer role button could be a checkbox - and should show the payout for both sides regardless of role
 - Small question mark tooltip icons on key controls would help new players (especially Dealer)
 - Limit hands not yet implemented - 4 winds (pong/kang of all winds) and 3 dragons are automatic 600
 - Buan-oh shows full breakdown then says = 600 - should surface the limit hand status more clearly
 - Step 1 Setup feels disconnected from win conditions - could be reorganized so players go straight to picking tiles
 
-### Known issues / coming in next update
+### Known issues - carried into v0.2.1
 - Kang support (tile count logic + manual grouping workflow)
 - Limit hands - 4 winds, all dragons
 - Concealed set validation vs. win by discard
