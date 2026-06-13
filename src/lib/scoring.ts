@@ -18,34 +18,47 @@
  *   Chow:                 0 pt always
  *   Pair:                 0.5 pt if dragon, own wind, or terminal; else 0
  *   Flower/season:        1 pt each
+ *   All pong hand:        +1 pt to hand total (no chows in any set)
  *
  * TAI (multipliers) — each tai doubles the score (×2^n total):
- *   Any dragon pong/kang:     +1 tai
- *   Own wind pong/kang:       +1 tai
- *   Own flower tile:          +1 tai
- *   Own season tile:          +1 tai
- *   Complete flower set (×4): +2 tai
- *   Complete season set (×4): +2 tai
+ *   Any dragon pong/kang:           +1 tai
+ *   Own wind pong/kang:             +1 tai
+ *   Own flower tile:                +1 tai
+ *   Own season tile:                +1 tai
+ *   Complete flower set (×4):       +1 tai
+ *   Complete season set (×4):       +1 tai
+ *   Half flush (one suit + honors): +1 tai
+ *   4 tai total:                    → automatic buan-oh
  *
  * FLAT BONUSES (each player pays separately, outside the formula):
  *   Revealed kang:  +100
  *   Hidden kang:    +200
  *   TTS kang:       +400 (held all 4 from the deal)
- *   Complete flower/season set: +100
+ *   Complete flower/season set: +100 each
  *   Self-draw (zi-mo): +100
+ *
+ * LIMIT HANDS (automatic buan-oh, 600 / 1200 for dealer):
+ *   All flowers + all seasons (8 bonus tiles total)
+ *   Full flush (one suit, no honors)
+ *   All terminals (only 1s and 9s)
+ *   Big winds (pong all 4 winds)
+ *   Small winds (3 wind pongs incl. own seat wind + pair of 4th wind)
+ *   Big three dragons (pong all 3 dragons)
+ *   Four kangs
+ *   4 tai (score naturally exceeds 600 via formula)
  */
 
-import type { CalculatorState, ScoreResult, ScoreBreakdownItem, FlatBonus, KangType } from '@/types/mahjong';
+import type { CalculatorState, ScoreResult, ScoreBreakdownItem, FlatBonus, KangType, Tile } from '@/types/mahjong';
 import { getTile, windToValue } from './tiles';
 
-// Honor (winds/dragons) and terminal (1 or 9) pongs are worth 1 pt; suited middle tiles are 0.5 pt
+// ── Base scoring helpers ──────────────────────────────────────────
+
 function getPongBasePoints(tileId: string): number {
   const tile = getTile(tileId);
   if (tile.isHonor || tile.isTerminal) return 1;
   return 0.5;
 }
 
-// Kang = pong score × 4. Concealed always doubles the pong base first.
 function getSetPoints(tileId: string, type: 'pong' | 'kang', concealed: boolean): number {
   let base = getPongBasePoints(tileId);
   if (concealed) base *= 2;
@@ -53,7 +66,6 @@ function getSetPoints(tileId: string, type: 'pong' | 'kang', concealed: boolean)
   return base;
 }
 
-// Tai earned from a pong/kang: dragons always give 1; winds give 1 only if it's your seat wind
 function getSetTai(tileId: string, seatWindValue: number): number {
   const tile = getTile(tileId);
   if (tile.suit === 'dragon') return 1;
@@ -79,7 +91,6 @@ function kangFlatAmount(kt: KangType): number {
 
 function pongExplanation(tileId: string, concealed: boolean, tai: number, seatWindValue: number): string {
   const tile = getTile(tileId);
-  const base = getPongBasePoints(tileId);
   const parts: string[] = [];
   if (tile.isHonor) parts.push('Honor tile = 1 pt base');
   else if (tile.isTerminal) parts.push('Terminal (1 or 9) = 1 pt base');
@@ -103,6 +114,75 @@ function pairExplanation(tileId: string, seatWindValue: number): string {
   if (tile.isTerminal) return 'Terminal pair (1 or 9) = 0.5 pts.';
   return 'Non-special pair = 0 pts.';
 }
+
+// ── Special hand detection ────────────────────────────────────────
+
+function getGroupTileObj(state: CalculatorState, group: { instanceIds: string[] }): Tile | null {
+  const tileId = state.instances.find(i => i.instanceId === group.instanceIds[0])?.tileId;
+  if (!tileId) return null;
+  try { return getTile(tileId); } catch { return null; }
+}
+
+function isAllPongHand(state: CalculatorState): boolean {
+  return state.groups
+    .filter(g => g.type !== 'incomplete' && g.instanceIds.length > 0)
+    .every(g => g.type === 'pong' || g.type === 'kang' || g.type === 'pair');
+}
+
+type FlushType = 'none' | 'half' | 'full';
+function detectFlush(state: CalculatorState): FlushType {
+  const groups = state.groups.filter(g => g.type !== 'incomplete' && g.instanceIds.length > 0);
+  const tiles = groups.map(g => getGroupTileObj(state, g)).filter((t): t is Tile => t !== null);
+  const suitedTiles = tiles.filter(t => t.suit === 'character' || t.suit === 'bamboo' || t.suit === 'circle');
+  if (suitedTiles.length === 0) return 'none';
+  const suits = new Set(suitedTiles.map(t => t.suit));
+  if (suits.size > 1) return 'none';
+  const hasHonors = tiles.some(t => t.suit === 'wind' || t.suit === 'dragon');
+  return hasHonors ? 'half' : 'full';
+}
+
+function isAllTerminals(state: CalculatorState): boolean {
+  const groups = state.groups.filter(g => g.type !== 'incomplete' && g.instanceIds.length > 0);
+  const tiles = groups.map(g => getGroupTileObj(state, g)).filter((t): t is Tile => t !== null);
+  return tiles.length > 0 && tiles.every(t => t.isTerminal);
+}
+
+function countKangs(state: CalculatorState): number {
+  return state.groups.filter(g => g.type === 'kang').length;
+}
+
+function isBigThreeDragons(state: CalculatorState): boolean {
+  const dragonPongs = state.groups.filter(g => {
+    if (g.type !== 'pong' && g.type !== 'kang') return false;
+    return getGroupTileObj(state, g)?.suit === 'dragon';
+  });
+  return dragonPongs.length === 3;
+}
+
+function isBigWinds(state: CalculatorState): boolean {
+  const windPongs = state.groups.filter(g => {
+    if (g.type !== 'pong' && g.type !== 'kang') return false;
+    return getGroupTileObj(state, g)?.suit === 'wind';
+  });
+  return windPongs.length === 4;
+}
+
+function isSmallWinds(state: CalculatorState, seatWindValue: number): boolean {
+  const windPongs = state.groups.filter(g => {
+    if (g.type !== 'pong' && g.type !== 'kang') return false;
+    return getGroupTileObj(state, g)?.suit === 'wind';
+  });
+  if (windPongs.length !== 3) return false;
+  const hasOwnWind = windPongs.some(g => getGroupTileObj(state, g)?.value === seatWindValue);
+  if (!hasOwnWind) return false;
+  const pairGroup = state.groups.find(g => g.type === 'pair');
+  if (!pairGroup) return false;
+  const pairTile = getGroupTileObj(state, pairGroup);
+  const pongWindValues = new Set(windPongs.map(g => getGroupTileObj(state, g)?.value));
+  return pairTile?.suit === 'wind' && !pongWindValues.has(pairTile.value);
+}
+
+// ── Main scoring function ─────────────────────────────────────────
 
 export function calculateScore(state: CalculatorState): ScoreResult {
   const seatWindValue = windToValue(state.seatWind);
@@ -167,6 +247,19 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     }
   }
 
+  // All pong hand bonus
+  if (state.isMahjong && isAllPongHand(state)) {
+    basePoints += 1;
+    breakdown.push({ label: 'All pong hand', points: 1, tai: 0, explanation: 'Every set is a pong or kang (no chows) — +1 base point.' });
+  }
+
+  // Half flush
+  const flushType = detectFlush(state);
+  if (flushType === 'half') {
+    tai += 1;
+    breakdown.push({ label: 'Half flush', points: 0, tai: 1, explanation: 'All suited tiles are the same suit, plus honor tiles — +1 tai.' });
+  }
+
   // Flowers
   for (const flowerVal of state.flowers) {
     basePoints += 1;
@@ -174,10 +267,11 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     if (isOwn) tai += 1;
     breakdown.push({ label: `Flower ${flowerVal}${isOwn ? ' ★' : ''}`, points: 1, tai: isOwn ? 1 : 0, explanation: isOwn ? 'Your own flower = 1 pt + 1 tai.' : 'Flower tile = 1 pt.' });
   }
-  if (state.flowers.length === 4) {
-    tai += 2;
-    flatBonuses.push({ label: 'Complete flower set', amount: 100 });
-    breakdown.push({ label: 'Complete flower set!', points: 0, tai: 2, explanation: 'All 4 flowers: +2 tai + 100 cash bonus from each player.' });
+  const hasAllFlowers = state.flowers.length === 4;
+  if (hasAllFlowers) {
+    tai += 1;
+    flatBonuses.push({ label: 'Complete flower set (flower kang)', amount: 100 });
+    breakdown.push({ label: 'Complete flower set! (flower kang)', points: 0, tai: 1, explanation: 'All 4 flowers (flower kang): +1 tai + 100 flat bonus from each player.' });
   }
 
   // Seasons
@@ -187,10 +281,11 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     if (isOwn) tai += 1;
     breakdown.push({ label: `Season ${seasonVal}${isOwn ? ' ★' : ''}`, points: 1, tai: isOwn ? 1 : 0, explanation: isOwn ? 'Your own season = 1 pt + 1 tai.' : 'Season tile = 1 pt.' });
   }
-  if (state.seasons.length === 4) {
-    tai += 2;
-    flatBonuses.push({ label: 'Complete season set', amount: 100 });
-    breakdown.push({ label: 'Complete season set!', points: 0, tai: 2, explanation: 'All 4 seasons: +2 tai + 100 cash bonus from each player.' });
+  const hasAllSeasons = state.seasons.length === 4;
+  if (hasAllSeasons) {
+    tai += 1;
+    flatBonuses.push({ label: 'Complete season set (season kang)', amount: 100 });
+    breakdown.push({ label: 'Complete season set! (season kang)', points: 0, tai: 1, explanation: 'All 4 seasons (season kang): +1 tai + 100 flat bonus from each player.' });
   }
 
   // Self-draw bonus
@@ -200,7 +295,7 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     breakdown.push({ label: 'Self-draw (Zi-mo)', points: 0.5, tai: 0, explanation: 'Drawing your own winning tile: +0.5 pts + 100 flat bonus from each player.' });
   }
 
-  // Ping-oh: all base points = 0 (implies all chows, non-scoring pair, no flowers, no self-draw, no win bonuses)
+  // Ping-oh: base points = 0 → flat 300/600
   const isPingOh = state.isMahjong && basePoints === 0;
   if (isPingOh) {
     return {
@@ -219,12 +314,42 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     };
   }
 
+  // Limit hand detection — checked in priority order
+  let specialHand: string | undefined;
+  if (state.isMahjong) {
+    if (hasAllFlowers && hasAllSeasons)          specialHand = 'All flowers + all seasons — automatic buan-oh';
+    else if (flushType === 'full')               specialHand = 'Full flush — automatic buan-oh';
+    else if (isAllTerminals(state))              specialHand = 'All terminals — automatic buan-oh';
+    else if (isBigWinds(state))                  specialHand = 'Big winds — automatic buan-oh';
+    else if (isSmallWinds(state, seatWindValue)) specialHand = 'Small winds — automatic buan-oh';
+    else if (isBigThreeDragons(state))           specialHand = 'Big three dragons — automatic buan-oh';
+    else if (countKangs(state) >= 4)             specialHand = 'Four kangs — automatic buan-oh';
+  }
+
+  if (specialHand) {
+    return {
+      isValid: true,
+      isPingOh: false,
+      isBuanOh: true,
+      isMinimumHand: false,
+      basePoints,
+      tai,
+      finalScore: 600,
+      dealerScore: 1200,
+      breakdown,
+      flatBonuses,
+      nearPingOh: false,
+      specialHand,
+    };
+  }
+
   // Formula: (base × 4, round up to nearest 10) + 20 if mahjong, then × 2^tai
   const step1 = Math.ceil((basePoints * 4) / 10) * 10;
   const step2 = state.isMahjong ? step1 + 20 : step1;
   const step3 = step2 * Math.pow(2, tai);
 
-  const isBuanOh = state.isMahjong && step3 >= 600;
+  // 4 tai always results in ≥600 naturally, but guard explicitly
+  const isBuanOh = state.isMahjong && (step3 >= 600 || tai >= 4);
   const isMinimumHand = state.isMahjong && step3 < 50 && step3 > 0;
 
   const finalScore = isBuanOh ? 600 : isMinimumHand ? 50 : Math.round(step3);
@@ -239,10 +364,9 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     const reasons: string[] = [];
     if (state.flowers.length > 0 || state.seasons.length > 0) reasons.push('bonus tile(s)');
     if (state.isSelfDraw) reasons.push('self-draw');
-    const winningGroup2 = winningGroup;
-    if (winningGroup2?.type === 'pair') reasons.push('win-by-pair bonus');
-    const winningInChow = winningGroup2?.type === 'chow' && winningInstanceId
-      ? winningGroup2.instanceIds.indexOf(winningInstanceId) === 1
+    if (winningGroup?.type === 'pair') reasons.push('win-by-pair bonus');
+    const winningInChow = winningGroup?.type === 'chow' && winningInstanceId
+      ? winningGroup.instanceIds.indexOf(winningInstanceId) === 1
       : false;
     if (winningInChow) reasons.push('kanchan bonus');
     nearPingOhReason = reasons.length > 0 ? reasons.join(' and ') : 'a scoring bonus';
