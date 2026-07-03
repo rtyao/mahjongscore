@@ -216,8 +216,9 @@ export default function RulesPage() {
           <ul className="mb-2">
             <Li><strong>Self-draw (Zi-mo / 自摸):</strong> you draw your winning tile from the wall. All three other players pay you.</Li>
             <Li><strong>Win on discard:</strong> another player discards your winning tile. Only that player pays you.</Li>
+            <Li><strong>Robbing the kang:</strong> if another player adds a drawn tile to their revealed pong to declare a kang, and that tile is your winning tile, you may steal it and declare Mahjong.</Li>
+            <Li><strong>No minimum hand:</strong> anyone can win on anything — there is no minimum score to declare Mahjong. The smallest wins are simply floored at 50 (go-ki-si-pa).</Li>
           </ul>
-          <P>Note: you generally cannot win on a tile you just stole to make a kang (robbing the kang is a special exception discussed below).</P>
         </Card>
 
         <Divider />
@@ -385,6 +386,8 @@ export default function RulesPage() {
           <p className="text-xs font-semibold uppercase tracking-wide mb-2 mt-4" style={{ color: 'var(--color-mist)' }}>Buan-oh — limit hands (600 / 1,200 for dealer)</p>
           <P>The following hands automatically pay the maximum, regardless of the formula:</P>
           <ul className="mb-3">
+            <Li><strong>Blessing of Heaven</strong> — the dealer wins with their opening hand (first draw).</Li>
+            <Li><strong>Blessing of Earth</strong> — winning on the dealer&apos;s very first discard.</Li>
             <Li><strong>Full flush</strong> — entire hand (all 5 sets + pair) is one suit, no honor tiles.</Li>
             <Li><strong>All terminals</strong> — every tile in the hand is a 1 or 9 (only terminal tiles, no other numbers or honors).</Li>
             <Li><strong>Small winds</strong> — pong of 3 winds (one must be your own seat wind) + pair of the 4th wind.</Li>

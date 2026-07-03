@@ -38,6 +38,8 @@
  *   Self-draw (zi-mo): +100
  *
  * LIMIT HANDS (automatic buan-oh, 600 / 1200 for dealer):
+ *   Blessing of Heaven (dealer wins on their opening hand)
+ *   Blessing of Earth (win on the dealer's first discard)
  *   All flowers + all seasons (8 bonus tiles total)
  *   Full flush (one suit, no honors)
  *   All terminals (only 1s and 9s)
@@ -116,70 +118,59 @@ function pairExplanation(tileId: string, seatWindValue: number): string {
 }
 
 // ── Special hand detection ────────────────────────────────────────
+// All detectors work on a single precomputed list of completed sets,
+// each represented by its set type and representative tile.
 
-function getGroupTileObj(state: CalculatorState, group: { instanceIds: string[] }): Tile | null {
-  const tileId = state.instances.find(i => i.instanceId === group.instanceIds[0])?.tileId;
-  if (!tileId) return null;
-  try { return getTile(tileId); } catch { return null; }
+interface CompletedSet {
+  type: 'pong' | 'kang' | 'chow' | 'pair';
+  tile: Tile;
 }
 
-function isAllPongHand(state: CalculatorState): boolean {
-  return state.groups
-    .filter(g => g.type !== 'incomplete' && g.instanceIds.length > 0)
-    .every(g => g.type === 'pong' || g.type === 'kang' || g.type === 'pair');
+function getCompletedSets(state: CalculatorState): CompletedSet[] {
+  const sets: CompletedSet[] = [];
+  for (const group of state.groups) {
+    if (group.type === 'incomplete' || group.instanceIds.length === 0) continue;
+    const tileId = state.instances.find(i => i.instanceId === group.instanceIds[0])?.tileId;
+    if (!tileId) continue;
+    try {
+      sets.push({ type: group.type, tile: getTile(tileId) });
+    } catch { /* unknown tile id — skip */ }
+  }
+  return sets;
+}
+
+function isAllPongHand(sets: CompletedSet[]): boolean {
+  return sets.every(s => s.type !== 'chow');
 }
 
 type FlushType = 'none' | 'half' | 'full';
-function detectFlush(state: CalculatorState): FlushType {
-  const groups = state.groups.filter(g => g.type !== 'incomplete' && g.instanceIds.length > 0);
-  const tiles = groups.map(g => getGroupTileObj(state, g)).filter((t): t is Tile => t !== null);
-  const suitedTiles = tiles.filter(t => t.suit === 'character' || t.suit === 'bamboo' || t.suit === 'circle');
-  if (suitedTiles.length === 0) return 'none';
-  const suits = new Set(suitedTiles.map(t => t.suit));
-  if (suits.size > 1) return 'none';
-  const hasHonors = tiles.some(t => t.suit === 'wind' || t.suit === 'dragon');
+function detectFlush(sets: CompletedSet[]): FlushType {
+  const suited = sets.filter(s => s.tile.suit === 'character' || s.tile.suit === 'bamboo' || s.tile.suit === 'circle');
+  if (suited.length === 0) return 'none';
+  if (new Set(suited.map(s => s.tile.suit)).size > 1) return 'none';
+  const hasHonors = sets.some(s => s.tile.isHonor);
   return hasHonors ? 'half' : 'full';
 }
 
-function isAllTerminals(state: CalculatorState): boolean {
-  const groups = state.groups.filter(g => g.type !== 'incomplete' && g.instanceIds.length > 0);
-  const tiles = groups.map(g => getGroupTileObj(state, g)).filter((t): t is Tile => t !== null);
-  return tiles.length > 0 && tiles.every(t => t.isTerminal);
+function isAllTerminals(sets: CompletedSet[]): boolean {
+  return sets.length > 0 && sets.every(s => s.tile.isTerminal);
 }
 
-function countKangs(state: CalculatorState): number {
-  return state.groups.filter(g => g.type === 'kang').length;
+function isBigThreeDragons(sets: CompletedSet[]): boolean {
+  return sets.filter(s => (s.type === 'pong' || s.type === 'kang') && s.tile.suit === 'dragon').length === 3;
 }
 
-function isBigThreeDragons(state: CalculatorState): boolean {
-  const dragonPongs = state.groups.filter(g => {
-    if (g.type !== 'pong' && g.type !== 'kang') return false;
-    return getGroupTileObj(state, g)?.suit === 'dragon';
-  });
-  return dragonPongs.length === 3;
+function isBigWinds(sets: CompletedSet[]): boolean {
+  return sets.filter(s => (s.type === 'pong' || s.type === 'kang') && s.tile.suit === 'wind').length === 4;
 }
 
-function isBigWinds(state: CalculatorState): boolean {
-  const windPongs = state.groups.filter(g => {
-    if (g.type !== 'pong' && g.type !== 'kang') return false;
-    return getGroupTileObj(state, g)?.suit === 'wind';
-  });
-  return windPongs.length === 4;
-}
-
-function isSmallWinds(state: CalculatorState, seatWindValue: number): boolean {
-  const windPongs = state.groups.filter(g => {
-    if (g.type !== 'pong' && g.type !== 'kang') return false;
-    return getGroupTileObj(state, g)?.suit === 'wind';
-  });
+function isSmallWinds(sets: CompletedSet[], seatWindValue: number): boolean {
+  const windPongs = sets.filter(s => (s.type === 'pong' || s.type === 'kang') && s.tile.suit === 'wind');
   if (windPongs.length !== 3) return false;
-  const hasOwnWind = windPongs.some(g => getGroupTileObj(state, g)?.value === seatWindValue);
-  if (!hasOwnWind) return false;
-  const pairGroup = state.groups.find(g => g.type === 'pair');
-  if (!pairGroup) return false;
-  const pairTile = getGroupTileObj(state, pairGroup);
-  const pongWindValues = new Set(windPongs.map(g => getGroupTileObj(state, g)?.value));
-  return pairTile?.suit === 'wind' && !pongWindValues.has(pairTile.value);
+  if (!windPongs.some(s => s.tile.value === seatWindValue)) return false;
+  const pair = sets.find(s => s.type === 'pair');
+  if (!pair || pair.tile.suit !== 'wind') return false;
+  return !windPongs.some(s => s.tile.value === pair.tile.value);
 }
 
 // ── Main scoring function ─────────────────────────────────────────
@@ -247,14 +238,16 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     }
   }
 
+  const completedSets = getCompletedSets(state);
+
   // All pong hand bonus
-  if (state.isMahjong && isAllPongHand(state)) {
+  if (state.isMahjong && isAllPongHand(completedSets)) {
     basePoints += 1;
     breakdown.push({ label: 'All pong hand', points: 1, tai: 0, explanation: 'Every set is a pong or kang (no chows) — +1 base point.' });
   }
 
   // Half flush
-  const flushType = detectFlush(state);
+  const flushType = detectFlush(completedSets);
   if (flushType === 'half') {
     tai += 1;
     breakdown.push({ label: 'Half flush', points: 0, tai: 1, explanation: 'All suited tiles are the same suit, plus honor tiles — +1 tai.' });
@@ -295,8 +288,8 @@ export function calculateScore(state: CalculatorState): ScoreResult {
     breakdown.push({ label: 'Self-draw (Zi-mo)', points: 0.5, tai: 0, explanation: 'Drawing your own winning tile: +0.5 pts + 100 flat bonus from each player.' });
   }
 
-  // Ping-oh: base points = 0 → flat 300/600
-  const isPingOh = state.isMahjong && basePoints === 0;
+  // Ping-oh: base points = 0 → flat 300/600 (a blessing outranks it — falls through to limit hands)
+  const isPingOh = state.isMahjong && basePoints === 0 && state.blessing === 'none';
   if (isPingOh) {
     return {
       isValid: true,
@@ -317,13 +310,16 @@ export function calculateScore(state: CalculatorState): ScoreResult {
   // Limit hand detection — checked in priority order
   let specialHand: string | undefined;
   if (state.isMahjong) {
-    if (hasAllFlowers && hasAllSeasons)          specialHand = 'All flowers + all seasons — automatic buan-oh';
-    else if (flushType === 'full')               specialHand = 'Full flush — automatic buan-oh';
-    else if (isAllTerminals(state))              specialHand = 'All terminals — automatic buan-oh';
-    else if (isBigWinds(state))                  specialHand = 'Big winds — automatic buan-oh';
-    else if (isSmallWinds(state, seatWindValue)) specialHand = 'Small winds — automatic buan-oh';
-    else if (isBigThreeDragons(state))           specialHand = 'Big three dragons — automatic buan-oh';
-    else if (countKangs(state) >= 4)             specialHand = 'Four kangs — automatic buan-oh';
+    const kangCount = completedSets.filter(s => s.type === 'kang').length;
+    if (state.blessing === 'heaven')                      specialHand = 'Blessing of Heaven — automatic buan-oh';
+    else if (state.blessing === 'earth')                  specialHand = 'Blessing of Earth — automatic buan-oh';
+    else if (hasAllFlowers && hasAllSeasons)              specialHand = 'All flowers + all seasons — automatic buan-oh';
+    else if (flushType === 'full')                        specialHand = 'Full flush — automatic buan-oh';
+    else if (isAllTerminals(completedSets))               specialHand = 'All terminals — automatic buan-oh';
+    else if (isBigWinds(completedSets))                   specialHand = 'Big winds — automatic buan-oh';
+    else if (isSmallWinds(completedSets, seatWindValue))  specialHand = 'Small winds — automatic buan-oh';
+    else if (isBigThreeDragons(completedSets))            specialHand = 'Big three dragons — automatic buan-oh';
+    else if (kangCount >= 4)                              specialHand = 'Four kangs — automatic buan-oh';
   }
 
   if (specialHand) {

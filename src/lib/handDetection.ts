@@ -1,4 +1,4 @@
-import type { Tile, Suit } from '@/types/mahjong';
+import type { Suit } from '@/types/mahjong';
 import { getTile, getTileBySuitValue } from './tiles';
 
 interface GroupResult {
@@ -80,8 +80,4 @@ export function detectHand(tileIds: string[]): HandResult | null {
   }
 
   return null;
-}
-
-export function isValidChow(suit: Suit, startValue: number): boolean {
-  return ['character', 'bamboo', 'circle'].includes(suit) && startValue >= 1 && startValue <= 7;
 }

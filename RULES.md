@@ -57,7 +57,8 @@ A complete hand = **5 sets + 1 pair = 17 tiles**.
 
 - **Self-draw (Zi-mo / 自摸)**: you draw your winning tile — all three players pay you
 - **Win on discard**: only the player who discarded pays you
-- You cannot win on a tile you just used to complete a kang
+- **Robbing the kang**: if another player adds a drawn tile to their revealed pong to declare a kang, and that tile is your winning tile, you may steal it and declare Mahjong
+- **No minimum hand**: anyone can win on anything — there is no minimum score required to declare Mahjong. The go-ki-si-pa floor (50) is the base score for the smallest wins.
 
 ---
 
@@ -186,6 +187,8 @@ The following hands automatically pay the maximum:
 
 | Hand | Description |
 |---|---|
+| **Blessing of Heaven** | Dealer wins with their opening hand (first draw) |
+| **Blessing of Earth** | Winning on the dealer's very first discard |
 | **All flowers + all seasons** | All 8 bonus tiles |
 | **Full flush** | Entire hand is one suit, no honor tiles |
 | **All terminals** | Every tile is a 1 or 9 only |
@@ -223,4 +226,4 @@ When a player is close to a big win, other players have restrictions:
 
 ---
 
-*Last updated: June 2026. Source: family knowledge. To suggest a correction, open an [Issue](https://github.com/rtyao/mahjongscore/issues).*
+*Last updated: June 20, 2026. Source: family knowledge. To suggest a correction, open an [Issue](https://github.com/rtyao/mahjongscore/issues).*

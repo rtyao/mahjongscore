@@ -84,12 +84,3 @@ export function getTileBySuitValue(suit: Suit, value: number): Tile | undefined 
 export function windToValue(wind: WindDirection): number {
   return { east: 1, south: 2, west: 3, north: 4 }[wind];
 }
-
-export function windLabel(wind: WindDirection): string {
-  return { east: 'East', south: 'South', west: 'West', north: 'North' }[wind];
-}
-
-// Jade hand tiles: 2,3,4,6,8 bamboo + Green Dragon
-export function isJadeHandTile(tileId: string): boolean {
-  return ['bamboo-2', 'bamboo-3', 'bamboo-4', 'bamboo-6', 'bamboo-8', 'dragon-2'].includes(tileId);
-}

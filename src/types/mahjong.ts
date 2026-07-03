@@ -17,7 +17,6 @@ export interface Tile {
 export interface TileInstance {
   instanceId: string;
   tileId: string;
-  groupId: string | null;
   isWinningTile: boolean;
 }
 
@@ -58,11 +57,14 @@ export interface ScoreResult {
   specialHand?: string;
 }
 
+export type Blessing = 'none' | 'heaven' | 'earth';
+
 export interface CalculatorState {
   seatWind: WindDirection;
   isDealer: boolean;
   isMahjong: boolean;
   isSelfDraw: boolean;
+  blessing: Blessing;
   instances: TileInstance[];
   groups: TileGroup[];
   flowers: number[];
