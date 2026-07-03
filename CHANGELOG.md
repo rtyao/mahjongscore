@@ -5,6 +5,55 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.2.2] - 2026-06-01 - Clarification patch: rules & scoring engine
+
+### Reflection
+
+Got to talk with family — grandma and relatives filled in a lot of gaps. This patch is mostly knowledge: confirming rules that were missing or wrong, publishing a real rules page, and updating the scoring engine to match. The big find was that the flower/season complete set tai was wrong from the start (+2, should be +1). Also confirmed several limit hands that weren't in the engine at all: small winds, big winds, big three dragons.
+
+The other thing this patch introduced is RULES.md — a plain markdown file that renders cleanly on GitHub. The .tsx rules page is code and isn't readable by non-developers, so RULES.md is the human-readable source anyone can look at and edit without touching the codebase.
+
+### What changed
+
+**Rules page**
+- Replaced all placeholder sections with real documented content
+- General Mahjong section: tiles table, set types, round flow, winning conditions
+- Filipino-Chinese section: full scoring formula, base points, tai system, flat bonuses, flowers/seasons, limit hands, protective rules, score floor/cap
+
+**Scoring engine fixes**
+- Complete flower/season set: corrected from +2 tai to +1 tai (was wrong since v0.1.0)
+- Added: half flush (one suit + honors) = +1 tai
+- Added: all pong hand = +1 base point
+- Added: full flush, all terminals = automatic buan-oh
+- Added: small winds, big winds, big three dragons = automatic buan-oh
+- Added: four kangs, all flowers + all seasons = automatic buan-oh
+- Added: explicit 4-tai buan-oh guard
+
+**Documentation**
+- Added RULES.md — human-readable rules document, renders cleanly on GitHub
+- Source of truth for rules content going forward
+
+### What I liked
+- Family knowledge filled in a lot of gaps that no documentation online covers
+- RULES.md solves the GitHub readability problem — anyone can read and edit it without knowing React
+- The scoring engine bug (flower tai) was significant and quietly wrong since the first build
+
+### What I didn't like
+- Still no consensus on all-honors hand (all winds + all dragons)
+- Blessing of Heaven/Earth still unconfirmed for this style
+- Rules page formatting is functional but not visually polished yet
+- Site still isn't deployed publicly
+
+### Still open / coming next
+- Rules page visual polish
+- All honors hand confirmation
+- Blessing of Heaven/Earth
+- Deployment (GitHub Pages or Vercel)
+- Kang grouping UI bug (carried from v0.2.1)
+- Auto-detect for 16-tile non-winning hands (carried from v0.2.1)
+
+---
+
 ## [v0.2.1] - 2026-05-08 - Logic fixes & step reorder
 
 ### Reflection
