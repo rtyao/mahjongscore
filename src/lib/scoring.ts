@@ -153,7 +153,9 @@ function detectFlush(sets: CompletedSet[]): FlushType {
 }
 
 function isAllTerminals(sets: CompletedSet[]): boolean {
-  return sets.length > 0 && sets.every(s => s.tile.isTerminal);
+  // A chow always contains non-terminal tiles, so a true all-terminal hand has none.
+  // Each remaining set is all copies of one tile, so its representative tile decides.
+  return sets.length > 0 && sets.every(s => s.type !== 'chow' && s.tile.isTerminal);
 }
 
 function isBigThreeDragons(sets: CompletedSet[]): boolean {
