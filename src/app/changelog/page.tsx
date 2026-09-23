@@ -19,9 +19,45 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: 'v0.3.0',
+    date: 'September 2026',
+    status: 'current',
+    summary: 'Hong Kong style added. The Filipino-Chinese style is why this site exists, but Hong Kong is the version most people mean when they say "mahjong" — so the calculator now scores both.',
+    liked: [
+      'Two separate engines is far clearer than one engine full of mode flags',
+      'Seven Pairs and Thirteen Orphans are read straight from your tiles, sidestepping the broken manual-grouping UI',
+      'Keeping situational fan out of the calculator kept the win-conditions step short',
+      'Regression tests grew from 14 to 59, covering both styles',
+    ],
+    didntLike: [
+      'The rules page is getting long — jump links help, but it may want real tabs',
+      'Manual kang grouping is still broken, now in two styles instead of one',
+      'Still not deployed',
+    ],
+    added: [
+      'Hong Kong fan engine: hand shape, suit, terminals/honours, dragons, winds, flowers, win actions',
+      'Fan → points table (0 fan = 1 point through 13+ fan = 384)',
+      'Discarder-pays-all payment: self-pick means all three pay, a discard means the discarder alone pays double',
+      'Replacement rules: stronger hands replace the weaker one in their family instead of stacking',
+      'Seven Pairs, Thirteen Orphans and Nine Gates recognised from tiles alone — no grouping needed',
+      'Table minimum fan setting (none / 1 / 3) with a warning when a hand falls below it',
+      'Style switcher at the top of the calculator; tile counter adapts to 17 or 14',
+      'Hong Kong setup shows round wind and table minimum, and hides the dealer box — HK has no dealer bonus',
+      'Full Hong Kong section on the Rules page and in RULES.md, with jump links',
+      'Scoring split into separate Taiwanese and Hong Kong engines',
+    ],
+    missing: [
+      'Deployment — the last thing between this and people actually using it',
+      'Rules page tabs instead of one long scroll',
+      'Kang grouping UI bug (carried from v0.2.1)',
+      'Auto-detect for non-winning hands (carried from v0.2.1)',
+      'All honors hand, Filipino-Chinese — still no family consensus',
+    ],
+  },
+  {
     version: 'v0.2.2',
     date: 'June 2026',
-    status: 'current',
+    status: 'past',
     summary: 'Clarification patch. Got to talk with family — grandma and relatives filled in a lot of gaps. Real rules are now published, and the scoring engine was corrected to match.',
     liked: [
       'Family knowledge filled in gaps that no online documentation covers',

@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 /* ─── tiny layout helpers ─────────────────────────────────────── */
 
-function H2({ children }: { children: React.ReactNode }) {
+function H2({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
-    <h2 className="text-2xl font-bold mt-12 mb-1" style={{ color: 'var(--color-ink)' }}>
+    <h2 id={id} className="text-2xl font-bold mt-12 mb-1" style={{ color: 'var(--color-ink)', scrollMarginTop: '1rem' }}>
       {children}
     </h2>
   );
@@ -114,22 +114,43 @@ export default function RulesPage() {
       <div className="max-w-3xl mx-auto px-4 py-10">
 
         {/* Header */}
-        <div className="mb-10">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-ink)' }}>Rules</h1>
-          <p className="text-base leading-relaxed" style={{ color: 'var(--color-stone)' }}>
-            Filipino-Chinese Mahjong as played in Philippine Chinese communities —
-            the Taiwanese-derived style passed down through families. This page covers
-            the general game first, then the specifics of this style.
+          <p className="text-base leading-relaxed mb-4" style={{ color: 'var(--color-stone)' }}>
+            Two styles, sharing one set of tiles. <strong>Filipino-Chinese</strong> is the Taiwanese-derived
+            style played in Philippine Chinese communities and passed down through families.
+            <strong> Hong Kong</strong> is a different game with a smaller hand and its own scoring.
+            The general rules below apply to both.
           </p>
+
+          {/* Jump links */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[
+              { href: '#general', label: 'General Mahjong' },
+              { href: '#filipino-chinese', label: 'Filipino-Chinese' },
+              { href: '#hong-kong', label: 'Hong Kong' },
+            ].map(({ href, label }) => (
+              <a
+                key={href}
+                href={href}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium"
+                style={{ background: 'var(--color-cream)', color: 'var(--color-stone)', border: '1px solid var(--color-cream-dark)' }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+
           <Warn>
-            <strong>Heads up:</strong> Mahjong rules vary by household. These are the rules as we know them —
-            cross-referenced with family memory. If something is wrong or missing, please{' '}
+            <strong>Heads up:</strong> Mahjong rules vary by household and by table. The Filipino-Chinese
+            rules are as we know them, cross-referenced with family memory. The Hong Kong rules follow
+            the <em>Hong Kong Mahjong Rule Sheet</em> v1.0 by /u/danma. If something is wrong or missing, please{' '}
             <Link href="/suggest" style={{ color: 'var(--color-jade)', textDecoration: 'underline' }}>suggest a correction</Link>.
           </Warn>
         </div>
 
         {/* ── GENERAL MAHJONG ───────────────────────────────────── */}
-        <H2>General Mahjong</H2>
+        <H2 id="general">General Mahjong</H2>
         <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--color-stone)' }}>
           New to Mahjong? Think of it like a card game — you draw and discard tiles each turn,
           building a complete hand. Everyone plays simultaneously. First to complete wins.
@@ -224,7 +245,7 @@ export default function RulesPage() {
         <Divider />
 
         {/* ── FILIPINO-CHINESE STYLE ────────────────────────────── */}
-        <H2>Filipino-Chinese Style</H2>
+        <H2 id="filipino-chinese">Filipino-Chinese Style</H2>
         <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--color-stone)' }}>
           The Taiwanese-derived style played in Philippine Chinese communities.
           The biggest difference from Hong Kong Mahjong is the hand size, the scoring formula, and the tai system.
@@ -429,6 +450,170 @@ export default function RulesPage() {
             { label: 'Go-ki-si-pa — minimum score', value: '50 / 100 dealer', note: 'any hand under 50 is bumped to 50' },
             { label: 'Buan-oh — maximum score', value: '600 / 1,200 dealer', note: 'any hand at or over 600 is capped' },
           ]} />
+        </Card>
+
+        <Divider />
+
+        {/* ── HONG KONG STYLE ───────────────────────────────────── */}
+        <H2 id="hong-kong">Hong Kong Style</H2>
+        <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--color-stone)' }}>
+          A different game from the Filipino-Chinese style rather than a variation on it.
+          The tiles are the same; almost nothing else is. You hold 13 tiles and win with 14,
+          and a hand&apos;s worth is one number — its fan count.
+        </p>
+
+        <Card>
+          <H3>What&apos;s different</H3>
+          <ScoreTable rows={[
+            { label: 'Hand size', value: '13 → 14', note: '4 sets + a pair' },
+            { label: 'Scoring', value: 'fan only', note: 'no base points, no tai' },
+            { label: 'Payout', value: 'fan table', note: 'a fixed lookup, not a formula' },
+            { label: 'Dealer bonus', value: 'none', note: 'the dealer pays and collects like everyone else' },
+            { label: 'Losing to a discard', value: 'discarder pays double', note: 'and pays alone' },
+            { label: 'Round wind', value: 'used', note: 'a triplet of it scores fan' },
+            { label: 'Kong bonus', value: 'none', note: 'no flat payments' },
+            { label: 'Concealed hand', value: '1 fan', note: 'scored once for the whole hand, not per set' },
+          ]} />
+        </Card>
+
+        <Card>
+          <H3>How fan becomes points</H3>
+          <P>
+            Add up the fan for every feature your hand matches, then read the total across this table.
+          </P>
+          <ScoreTable rows={[
+            { label: '0 fan — chicken hand (雞和)', value: '1 pt' },
+            { label: '1 fan', value: '2 pts' },
+            { label: '2 fan', value: '4 pts' },
+            { label: '3 fan', value: '8 pts' },
+            { label: '4 fan', value: '16 pts' },
+            { label: '5 fan', value: '24 pts' },
+            { label: '6 fan', value: '32 pts' },
+            { label: '7 fan', value: '48 pts' },
+            { label: '8 fan', value: '64 pts' },
+            { label: '9 fan', value: '96 pts' },
+            { label: '10 fan', value: '128 pts' },
+            { label: '11 fan', value: '192 pts' },
+            { label: '12 fan', value: '256 pts' },
+            { label: '13+ fan — limit', value: '384 pts' },
+          ]} />
+          <Note>
+            <strong>Discarder pays all.</strong> On a self-pick, all three other players each pay you the point value.
+            If you won on a discard, only the player who discarded pays — and they pay double.
+          </Note>
+          <P>
+            Many tables set a <strong>minimum fan</strong>, commonly 3, below which you may not declare a win at all.
+            Agree on this before you start — the calculator lets you set it.
+          </P>
+        </Card>
+
+        <Card>
+          <H3>Two rules that decide how fan combine</H3>
+          <ul className="mb-2">
+            <Li>
+              <strong>A stronger hand replaces the weaker one in its family — they never stack.</strong>{' '}
+              Full Flush replaces Mixed Flush. Big Three Dragons replaces the per-dragon award.
+              All Concealed Triplets replaces All Triplets. In the tables below, an arrow (↳) marks a replacement.
+            </Li>
+            <Li>
+              <strong>Mixed Terminals, All Terminals and All Honours already include All Triplets&apos; 3 fan.</strong>{' '}
+              Those hands are all-triplet hands by definition, so the 3 fan is baked into the printed value. Don&apos;t add it twice.
+            </Li>
+          </ul>
+          <P>Unless a rule says otherwise, triplets and kongs are interchangeable.</P>
+        </Card>
+
+        <Card>
+          <H3>Hand shape</H3>
+          <ScoreTable rows={[
+            { label: 'All Sequences (平和)', value: '1 fan', note: 'every set is a sequence' },
+            { label: 'All Triplets (對對和)', value: '3 fan', note: 'every set is a triplet or kong' },
+            { label: '↳ All Concealed Triplets', value: '8 fan', note: 'no tiles taken from others; self-pick, or the discard completed your pair' },
+            { label: '↳ All Quadruplets', value: '13 fan', note: 'all four sets are kongs' },
+          ]} />
+        </Card>
+
+        <Card>
+          <H3>Suit, terminals and honours</H3>
+          <ScoreTable rows={[
+            { label: 'Mixed Flush (混一色)', value: '3 fan', note: 'one suit plus honours' },
+            { label: '↳ Full Flush (清一色)', value: '7 fan', note: 'one suit and nothing else' },
+            { label: 'Mixed Terminals', value: '4 fan', note: 'only ones, nines and honours' },
+            { label: '↳ All Terminals', value: '13 fan', note: 'only ones and nines' },
+            { label: 'All Honours', value: '10 fan', note: 'only honour tiles' },
+          ]} />
+        </Card>
+
+        <Card>
+          <H3>Dragons and winds</H3>
+          <ScoreTable rows={[
+            { label: 'Dragon triplet', value: '1 fan each', note: 'scored per triplet' },
+            { label: '↳ Small Three Dragons', value: '5 fan', note: 'two dragon triplets + pair of the third' },
+            { label: '↳ Big Three Dragons', value: '8 fan', note: 'triplets of all three dragons' },
+            { label: 'Round wind / seat wind triplet', value: '1 fan each', note: 'a triplet that is both counts 2 fan' },
+            { label: '↳ Small Four Winds', value: '6 fan', note: 'three wind triplets + pair of the fourth' },
+            { label: '↳ Big Four Winds', value: '13 fan', note: 'triplets of all four winds' },
+          ]} />
+        </Card>
+
+        <Card>
+          <H3>Flowers & seasons</H3>
+          <ScoreTable rows={[
+            { label: 'No flowers or seasons at all', value: '1 fan' },
+            { label: 'Flower or season matching your seat', value: '1 fan each', note: 'East 1, South 2, West 3, North 4' },
+            { label: 'All four flowers, or all four seasons', value: '2 fan' },
+            { label: 'Seven bonus tiles', value: '3 fan', note: 'you may declare an immediate win on the seventh' },
+            { label: 'All eight bonus tiles', value: '8 fan', note: 'you may declare an immediate win on the eighth' },
+          ]} />
+        </Card>
+
+        <Card>
+          <H3>Win actions</H3>
+          <ScoreTable rows={[
+            { label: 'Self-Pick (自摸)', value: '1 fan', note: 'you drew your winning tile from the wall' },
+            { label: 'Concealed Hand (門前清)', value: '1 fan', note: 'you took no tiles from other players' },
+            { label: 'Robbing the Kong (搶槓)', value: '1 fan', note: 'won by interrupting a pong being upgraded to a kong' },
+            { label: 'Moon Under The Sea (海底撈月)', value: '1 fan', note: 'your winning tile was the last in the wall, or the last discard' },
+            { label: '↳ Win by Kong Replacement (槓上開花)', value: '2 fan', note: 'you won on the replacement tile drawn after a kong' },
+            { label: '↳ Double Kong Replacement', value: '9 fan', note: 'two kongs in a row, winning on the second replacement' },
+          ]} />
+        </Card>
+
+        <Card>
+          <H3>Special hands</H3>
+          <ScoreTable rows={[
+            { label: 'Blessing of Heaven (天和)', value: '13 fan', note: 'as dealer, your starting hand already wins' },
+            { label: 'Blessing of Earth (地和)', value: '13 fan', note: "as a non-dealer, you win on the dealer's first discard" },
+            { label: 'Blessing of Man (人和)', value: '13 fan', note: 'as a non-dealer, you win on your first turn with a self-pick' },
+            { label: 'Nine Gates (九蓮寶燈)', value: '13 fan', note: '1112345678999 of one suit, plus a 14th of that suit' },
+            { label: 'Thirteen Orphans (十三么)', value: '13 fan', note: 'one of each terminal, wind and dragon, plus a 14th matching one' },
+            { label: 'Seven Pairs (七對子)', value: '4 fan', note: 'seven different pairs — four of a kind is not two pairs' },
+          ]} />
+          <Warn>
+            <strong>Seven Pairs is not played at every table.</strong> It stacks with All Honours,
+            Mixed Flush and Full Flush where it is played. Check before counting it.
+          </Warn>
+        </Card>
+
+        <Card>
+          <H3>What the calculator covers</H3>
+          <P>
+            The calculator scores everything it can read off your tiles. Six fan depend on what happened
+            at the table rather than on the hand itself, so there is nothing in the tiles to detect:
+          </P>
+          <ul className="mb-3">
+            <Li>Robbing the Kong</Li>
+            <Li>Moon Under The Sea</Li>
+            <Li>Win by Kong Replacement, and Double Kong Replacement</Li>
+            <Li>Blessing of Heaven, Earth and Man</Li>
+          </ul>
+          <P>
+            If one of those applies to your hand, add its fan to the calculator&apos;s total yourself.
+          </P>
+          <Note>
+            Seven Pairs, Thirteen Orphans and Nine Gates are recognised from your tiles alone —
+            you don&apos;t need to group them into sets first.
+          </Note>
         </Card>
 
         <Divider />

@@ -5,6 +5,63 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.3.0] - 2026-09-21 - Hong Kong style
+
+### Reflection
+
+Decided to add Hong Kong style before publishing. The thinking: the Filipino-Chinese style is why this site exists, but almost nobody outside Philippine Chinese families plays it. Hong Kong is the version most people mean when they say "mahjong." If the site can score both, it's useful to far more people on day one — and the Filipino-Chinese half is still the part nobody else documents.
+
+Worth saying plainly: these are two different games, not two flavours of one. They share the tiles and nothing else. HK uses 13 tiles instead of 16, four sets instead of five, and a completely different scoring system — pure fan, read off a payout table, no base points and no tai. The dealer doesn't even get a payout bonus. Building it as a second engine rather than bending the first one was the right call.
+
+### What changed
+
+**Hong Kong scoring engine (new)**
+- Full fan system from the HK rule sheet: hand shape, suit, terminals/honours, dragons, winds, flowers, win actions
+- Fan → points table (0 fan = 1 point through 13+ fan = 384)
+- Discarder-pays-all payment: self-pick means all three players pay; a discard means the discarder alone pays double
+- Replacement rules handled properly — Full Flush replaces Mixed Flush, Big Three Dragons replaces the per-dragon award, and so on. Stronger hands never stack with the weaker one in their family
+- Mixed Terminals / All Terminals / All Honours correctly absorb All Triplets' 3 fan instead of double-counting it
+- Seven Pairs, Thirteen Orphans and Nine Gates recognised from the tiles alone — no grouping needed
+- Table minimum fan setting (none / 1 / 3), with a warning when a hand falls below it
+
+**Calculator**
+- Style switcher at the top — Filipino-Chinese or Hong Kong
+- Switching keeps your tiles but clears the sets, since the styles build a different number of them
+- Tile counter adapts: 17 for Filipino-Chinese, 14 for Hong Kong, plus one per kong
+- Hong Kong setup shows round wind and table minimum; the dealer checkbox is hidden because HK has no dealer bonus
+- Hong Kong win conditions show self-pick and concealed hand; blessings are Filipino-Chinese only
+- Per-set concealed and kang-type controls hidden in HK mode, where they do nothing
+- New Hong Kong score panel: fan count, points, breakdown, and both payment amounts
+
+**Rules**
+- Full Hong Kong section on /rules and in RULES.md, with jump links at the top of the page
+- Every fan documented, including the six situational ones the calculator can't detect
+- Home page and footer updated — the site no longer claims to cover only one style
+
+**Code**
+- `src/lib/scoring.ts` split into `src/lib/scoring/` — `taiwanese.ts`, `hongkong.ts`, and an `index.ts` that dispatches on style
+- `ScoreResult` is now a union discriminated by style
+- Regression tests grew from 14 to 59, covering both engines
+
+### What I liked
+- Two engines side by side is much clearer than one engine with mode flags everywhere
+- Recognising Seven Pairs and Thirteen Orphans straight from the tiles sidesteps the broken manual-grouping UI entirely
+- Keeping situational fan out of the calculator kept Step 4 short — they're rules you look up, not things you tick
+
+### What I didn't like
+- The rules page is getting long. Jump links help, but it may want real tabs
+- Manual kang grouping is still broken, now in two styles instead of one
+- Still not deployed
+
+### Still open / coming next
+- Deployment — the last thing standing between this and people actually using it
+- Rules page tabs instead of one long scroll
+- Kang grouping UI bug (carried from v0.2.1)
+- Auto-detect for non-winning hands (carried from v0.2.1)
+- All honors hand, Filipino-Chinese — still no family consensus
+
+---
+
 ## [v0.2.2] - 2026-06-01 - Clarification patch: rules & scoring engine
 
 ### Reflection

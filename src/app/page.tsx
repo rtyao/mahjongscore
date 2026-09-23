@@ -109,14 +109,14 @@ export default function HomePage() {
             <FeatureCard
               icon="📖"
               title="Rules Guide"
-              description="From beginner basics to the scoring details unique to this style. Built so a 10-year-old — or a curious Hong Kong player — can follow along."
+              description="From beginner basics to the full scoring details of both styles — Filipino-Chinese and Hong Kong. Built so a 10-year-old can follow along."
               href="/rules"
               label="Read the Rules"
             />
             <FeatureCard
               icon="🀄"
               title="Score Calculator"
-              description="Enter your winning hand tile by tile. The calculator validates the hand, detects special cases like ping-oh, and shows the full score breakdown."
+              description="Enter your winning hand tile by tile, in either Filipino-Chinese or Hong Kong style. The calculator sorts your sets, spots special hands, and shows the full breakdown."
               href="/calculator"
               label="Try the Calculator"
               highlight
@@ -137,8 +137,9 @@ export default function HomePage() {
         <div className="max-w-3xl mx-auto px-4 text-center">
           <p className="text-sm leading-relaxed" style={{ color: 'var(--color-jade)' }}>
             <strong>A note:</strong> Mahjong is both a regional and familial culture that varies from household to household.
-            This site covers the Taiwanese/Filipino-Chinese style played in the Philippines — different from other Filipino
-            and Hong Kong styles. Take any rule with a grain of salt and{' '}
+            This site is built around the Taiwanese/Filipino-Chinese style played in the Philippines, which differs from
+            other Filipino styles. Hong Kong style is covered too, as its own separate game.
+            Take any rule with a grain of salt and{' '}
             <Link href="/suggest" className="underline font-medium">let us know if something&apos;s off</Link>.
           </p>
         </div>

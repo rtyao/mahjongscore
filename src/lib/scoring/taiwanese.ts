@@ -1,5 +1,7 @@
 /**
- * scoring.ts — Filipino-Chinese Mahjong scoring engine
+ * taiwanese.ts — Filipino-Chinese (Taiwanese-derived) Mahjong scoring engine
+ *
+ * 16 tiles in hand, 17 to win: 5 sets + 1 pair.
  *
  * FORMULA (applied in calculateScore):
  *   1. Sum base points from each set, flowers, seasons, and win bonuses
@@ -50,8 +52,8 @@
  *   4 tai (score naturally exceeds 600 via formula)
  */
 
-import type { CalculatorState, ScoreResult, ScoreBreakdownItem, FlatBonus, KangType, Tile } from '@/types/mahjong';
-import { getTile, windToValue } from './tiles';
+import type { CalculatorState, TaiwaneseScoreResult, ScoreBreakdownItem, FlatBonus, KangType, Tile } from '@/types/mahjong';
+import { getTile, windToValue } from '../tiles';
 
 // ── Base scoring helpers ──────────────────────────────────────────
 
@@ -177,7 +179,7 @@ function isSmallWinds(sets: CompletedSet[], seatWindValue: number): boolean {
 
 // ── Main scoring function ─────────────────────────────────────────
 
-export function calculateScore(state: CalculatorState): ScoreResult {
+export function calculateTaiwanese(state: CalculatorState): TaiwaneseScoreResult {
   const seatWindValue = windToValue(state.seatWind);
   const breakdown: ScoreBreakdownItem[] = [];
   const flatBonuses: FlatBonus[] = [];
@@ -294,6 +296,7 @@ export function calculateScore(state: CalculatorState): ScoreResult {
   const isPingOh = state.isMahjong && basePoints === 0 && state.blessing === 'none';
   if (isPingOh) {
     return {
+      style: 'taiwanese',
       isValid: true,
       isPingOh: true,
       isBuanOh: false,
@@ -326,6 +329,7 @@ export function calculateScore(state: CalculatorState): ScoreResult {
 
   if (specialHand) {
     return {
+      style: 'taiwanese',
       isValid: true,
       isPingOh: false,
       isBuanOh: true,
@@ -371,6 +375,7 @@ export function calculateScore(state: CalculatorState): ScoreResult {
   }
 
   return {
+    style: 'taiwanese',
     isValid: true,
     isPingOh: false,
     isBuanOh,

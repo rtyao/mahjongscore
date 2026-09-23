@@ -12,11 +12,12 @@ export default function Footer() {
             </div>
             <p className="text-xs leading-relaxed max-w-sm">
               Built to preserve the Filipino-Chinese Mahjong style — the 16-tile game played across the Philippines.
+              Hong Kong style is covered too.
             </p>
             <p className="text-xs mt-2" style={{ color: 'var(--color-mist)' }}>
               Mahjong is both a regional and familial culture that varies from household to household.
-              This site covers the Taiwanese/Filipino-Chinese style played in the Philippines,
-              which differs from other Filipino and Hong Kong styles.
+              The Filipino-Chinese rules here are the Taiwanese-derived style played in the Philippines,
+              which differs from other Filipino styles.
             </p>
           </div>
 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { CalculatorState, ScoreResult, TileGroup, Tile, WindDirection, KangType, Blessing } from '@/types/mahjong';
-import { calculateScore } from '@/lib/scoring';
+import type { CalculatorState, ScoreResult, TileGroup, Tile, WindDirection, KangType, Blessing, MahjongStyle } from '@/types/mahjong';
+import { HAND_SIZE } from '@/types/mahjong';
+import { calculateScore, hasStandaloneShape } from '@/lib/scoring';
 import { detectHand } from '@/lib/handDetection';
 import TilePickerGrid from './components/TilePickerGrid';
 import HandTray from './components/HandTray';
@@ -11,6 +12,12 @@ import ScoreDisplay from './components/ScoreDisplay';
 
 const WIND_LABELS: Record<WindDirection, string> = { east: 'East', south: 'South', west: 'West', north: 'North' };
 const WIND_CHARS: Record<WindDirection, string> = { east: '東', south: '南', west: '西', north: '北' };
+const WINDS: WindDirection[] = ['east', 'south', 'west', 'north'];
+
+const STYLES: { value: MahjongStyle; name: string; chinese: string; blurb: string }[] = [
+  { value: 'taiwanese', name: 'Filipino-Chinese', chinese: '台灣麻將', blurb: '16 tiles · 5 sets + pair · points × tai' },
+  { value: 'hongkong', name: 'Hong Kong', chinese: '香港麻雀', blurb: '13 tiles · 4 sets + pair · fan' },
+];
 
 const BLESSING_OPTIONS: { value: Blessing; label: string; hint: string }[] = [
   { value: 'none', label: 'None', hint: 'Normal win' },
@@ -18,20 +25,69 @@ const BLESSING_OPTIONS: { value: Blessing; label: string; hint: string }[] = [
   { value: 'earth', label: '🌱 Earth', hint: "Won on dealer's first discard" },
 ];
 
+const MINIMUM_FAN_OPTIONS = [0, 1, 3];
+
 const INITIAL_STATE: CalculatorState = {
+  style: 'taiwanese',
   seatWind: 'east',
-  isDealer: false,
   isMahjong: true,
   isSelfDraw: false,
-  blessing: 'none',
   instances: [],
   groups: [],
   flowers: [],
   seasons: [],
+  // Taiwanese only
+  isDealer: false,
+  blessing: 'none',
+  // Hong Kong only
+  roundWind: 'east',
+  isConcealedHand: false,
+  minimumFan: 3,
 };
 
 function uid() {
   return Math.random().toString(36).slice(2, 9);
+}
+
+/** Small labelled row of toggle buttons, used throughout the setup steps. */
+function ButtonRow<T extends string | number | boolean>({
+  label, hint, options, value, onChange, accent = 'var(--color-jade)',
+}: {
+  label: string;
+  hint?: string;
+  options: { value: T; label: string; sub?: string; title?: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  accent?: string;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>
+        {label}
+        {hint && <span className="font-normal" style={{ color: 'var(--color-mist)' }}> {hint}</span>}
+      </p>
+      <div className="flex gap-1.5 flex-wrap">
+        {options.map(opt => {
+          const active = value === opt.value;
+          return (
+            <button
+              key={String(opt.value)}
+              onClick={() => onChange(opt.value)}
+              title={opt.title}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex flex-col items-center leading-tight"
+              style={{
+                background: active ? accent : 'var(--color-cream)',
+                color: active ? '#fff' : 'var(--color-stone)',
+                border: `1px solid ${active ? accent : 'var(--color-cream-dark)'}`,
+              }}
+            >
+              {opt.sub ? <><span className="text-base">{opt.sub}</span><span className="text-xs">{opt.label}</span></> : opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export default function CalculatorClient() {
@@ -40,11 +96,25 @@ export default function CalculatorClient() {
   const [calcError, setCalcError] = useState<string | null>(null);
   const [detectError, setDetectError] = useState<string | null>(null);
 
+  const isHK = state.style === 'hongkong';
+  const sizes = HAND_SIZE[state.style];
+  const kangCount = state.groups.filter(g => g.type === 'kang').length;
+  const tileTarget = (state.isMahjong ? sizes.winning : sizes.concealed) + kangCount;
+
   // Any change to the hand invalidates the last calculated score
   const update = useCallback((updater: (prev: CalculatorState) => CalculatorState) => {
     setState(updater);
     setResult(null);
   }, []);
+
+  /** Switching style keeps your tiles but drops the groups, since the two
+   *  styles build a different number of sets. */
+  const setStyle = (style: MahjongStyle) => {
+    if (style === state.style) return;
+    update(prev => ({ ...prev, style, groups: [], instances: prev.instances.map(i => ({ ...i, isWinningTile: false })) }));
+    setCalcError(null);
+    setDetectError(null);
+  };
 
   const addTile = useCallback((tile: Tile) => {
     update(prev => {
@@ -58,7 +128,7 @@ export default function CalculatorClient() {
     setCalcError(null);
   }, [update]);
 
-  // Removes an instance and drops it from any group; empty groups are pruned
+  // Removes instances and drops them from any group; empty groups are pruned
   const removeInstances = useCallback((instanceIds: string[]) => {
     update(prev => ({
       ...prev,
@@ -76,15 +146,19 @@ export default function CalculatorClient() {
 
   const autoDetect = () => {
     const tileIds = state.instances.map(i => i.tileId);
-    const minTiles = state.isMahjong ? 17 : 16;
+    const minTiles = state.isMahjong ? sizes.winning : sizes.concealed;
     if (tileIds.length < minTiles) {
-      setDetectError(`Need at least ${minTiles} tiles to auto-detect - you have ${tileIds.length}`);
+      setDetectError(`Need at least ${minTiles} tiles to auto-detect — you have ${tileIds.length}`);
       return;
     }
-    // Hands with kangs have minTiles + n tiles (one extra per kang), so any count >= minTiles is allowed
+    // Hands with kongs hold minTiles + n tiles, so any count at or above the
+    // minimum is allowed.
     const handResult = detectHand(tileIds);
     if (!handResult) {
-      setDetectError("Couldn't find a valid hand — check your tiles or group manually");
+      const extra = isHK && hasStandaloneShape(tileIds)
+        ? ' — but this hand scores as a special shape, so you can calculate without grouping.'
+        : ' — check your tiles or group manually.';
+      setDetectError(`Couldn't sort this into ${sizes.sets} sets and a pair${extra}`);
       return;
     }
     setDetectError(null);
@@ -159,24 +233,29 @@ export default function CalculatorClient() {
   const toggleSeason = toggleBonus('seasons');
 
   const calculate = () => {
-    if (state.instances.length > 0 && state.groups.length === 0) {
+    const tileIds = state.instances.map(i => i.tileId);
+    // Seven Pairs, Thirteen Orphans and Nine Gates score straight from the
+    // tiles, so they skip the grouping and winning-tile prompts.
+    const standalone = isHK && hasStandaloneShape(tileIds);
+
+    if (state.instances.length > 0 && state.groups.length === 0 && !standalone) {
       setCalcError('Run "Auto-detect sets" first, then calculate.');
       return;
     }
-    if (state.isMahjong) {
+    if (state.isMahjong && !standalone) {
       const winningInst = state.instances.find(i => i.isWinningTile);
       if (!winningInst) {
         setCalcError('Tap your winning tile to mark it ★ before calculating.');
         return;
       }
-      if (!state.isSelfDraw) {
+      if (!isHK && !state.isSelfDraw) {
         const winningGroup = state.groups.find(g => g.instanceIds.includes(winningInst.instanceId));
         if (winningGroup?.concealed) {
-          setCalcError('Winning tile is in a concealed set, but win by discard is selected. If you stole the tile to win, the set is revealed - uncheck concealed, or switch to self-draw.');
+          setCalcError('Winning tile is in a concealed set, but win by discard is selected. If you stole the tile to win, the set is revealed — uncheck concealed, or switch to self-draw.');
           return;
         }
       }
-      if (state.blessing === 'heaven' && !state.isDealer) {
+      if (!isHK && state.blessing === 'heaven' && !state.isDealer) {
         setCalcError('Blessing of Heaven is a dealer-only win (winning on your opening hand). Check the Dealer box, or pick Blessing of Earth.');
         return;
       }
@@ -186,7 +265,7 @@ export default function CalculatorClient() {
   };
 
   const reset = () => {
-    setState(INITIAL_STATE);
+    setState({ ...INITIAL_STATE, style: state.style });
     setResult(null);
     setCalcError(null);
     setDetectError(null);
@@ -195,10 +274,47 @@ export default function CalculatorClient() {
   return (
     <div style={{ background: 'var(--color-cream-light)', paddingBottom: '100px' }} className="min-h-screen">
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <div className="mb-6">
+        <div className="mb-5">
           <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--color-ink)' }}>Hand Calculator</h1>
           <p className="text-sm" style={{ color: 'var(--color-stone)' }}>
-            Filipino-Chinese Mahjong · 16 tiles · 5 sets + 1 pair
+            {isHK
+              ? 'Hong Kong Mahjong · 13 tiles · 4 sets + 1 pair'
+              : 'Filipino-Chinese Mahjong · 16 tiles · 5 sets + 1 pair'}
+          </p>
+        </div>
+
+        {/* Style switcher */}
+        <div className="rounded-2xl p-4 mb-6" style={{ background: '#fff', border: '1px solid var(--color-cream-dark)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--color-mist)' }}>
+            Mahjong style
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {STYLES.map(s => {
+              const active = state.style === s.value;
+              return (
+                <button
+                  key={s.value}
+                  onClick={() => setStyle(s.value)}
+                  className="text-left px-4 py-3 rounded-xl transition-colors"
+                  style={{
+                    background: active ? 'var(--color-jade)' : 'var(--color-cream-light)',
+                    border: `1.5px solid ${active ? 'var(--color-jade)' : 'var(--color-cream-dark)'}`,
+                    color: active ? '#fff' : 'var(--color-ink)',
+                  }}
+                >
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-semibold">{s.name}</span>
+                    <span className="text-xs" style={{ opacity: active ? 0.85 : 0.6 }}>{s.chinese}</span>
+                  </div>
+                  <p className="text-xs mt-0.5" style={{ color: active ? '#fff' : 'var(--color-stone)', opacity: active ? 0.85 : 1 }}>
+                    {s.blurb}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs mt-2.5" style={{ color: 'var(--color-mist)' }}>
+            Switching keeps your tiles but clears the sets, since the two styles build a different number of them.
           </p>
         </div>
 
@@ -208,7 +324,7 @@ export default function CalculatorClient() {
 
             {/* Step 1: Pick tiles */}
             <section className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid var(--color-cream-dark)' }}>
-              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 1 - Pick Your Tiles</h2>
+              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 1 — Pick Your Tiles</h2>
               <TilePickerGrid
                 instances={state.instances}
                 flowers={state.flowers}
@@ -223,9 +339,12 @@ export default function CalculatorClient() {
             {/* Step 2: Build sets */}
             {state.instances.length > 0 && (
               <section className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid var(--color-cream-dark)' }}>
-                <h2 className="text-sm font-semibold mb-1 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 2 - Build Your Sets</h2>
+                <h2 className="text-sm font-semibold mb-1 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 2 — Build Your Sets</h2>
                 <p className="text-xs mb-4" style={{ color: 'var(--color-stone)' }}>
-                  Hit Auto-detect to sort your hand automatically. Then tap any tile to mark it ★ as your winning tile. For kangs or concealeds, adjust manually.
+                  Hit Auto-detect to sort your hand into {sizes.sets} sets and a pair. Then tap any tile to mark it ★ as your winning tile.
+                  {isHK
+                    ? ' Seven Pairs, Thirteen Orphans and Nine Gates are recognised from your tiles alone — no grouping needed.'
+                    : ' For kangs or concealed sets, adjust manually.'}
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -258,6 +377,7 @@ export default function CalculatorClient() {
                         key={group.id}
                         group={group}
                         instances={state.instances}
+                        style={state.style}
                         onSetType={(id, type) => patchGroup(id, { type })}
                         onToggleConcealed={id => patchGroup(id, { concealed: !state.groups.find(g => g.id === id)?.concealed })}
                         onSetKangType={(id, kangType) => patchGroup(id, { kangType })}
@@ -272,115 +392,123 @@ export default function CalculatorClient() {
 
             {/* Step 3: Setup */}
             <section className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid var(--color-cream-dark)' }}>
-              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 3 - Setup</h2>
+              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 3 — Setup</h2>
               <div className="flex flex-wrap gap-5">
-                <div>
-                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>Your Seat</p>
-                  <div className="flex gap-1.5">
-                    {(['east', 'south', 'west', 'north'] as WindDirection[]).map(w => (
-                      <button
-                        key={w}
-                        onClick={() => update(p => ({ ...p, seatWind: w }))}
-                        className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex flex-col items-center leading-tight"
-                        style={{
-                          background: state.seatWind === w ? 'var(--color-jade)' : 'var(--color-cream)',
-                          color: state.seatWind === w ? '#fff' : 'var(--color-stone)',
-                          border: `1px solid ${state.seatWind === w ? 'var(--color-jade)' : 'var(--color-cream-dark)'}`,
-                        }}
-                      >
-                        <span className="text-base">{WIND_CHARS[w]}</span>
-                        <span className="text-xs">{WIND_LABELS[w]}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>Role</p>
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={state.isDealer}
-                      onChange={e => update(p => ({ ...p, isDealer: e.target.checked }))}
-                      className="w-4 h-4 rounded"
-                      style={{ accentColor: 'var(--color-jade)' }}
+                <ButtonRow
+                  label="Your seat"
+                  value={state.seatWind}
+                  onChange={w => update(p => ({ ...p, seatWind: w }))}
+                  options={WINDS.map(w => ({ value: w, label: WIND_LABELS[w], sub: WIND_CHARS[w] }))}
+                />
+
+                {isHK ? (
+                  <>
+                    <ButtonRow
+                      label="Round wind"
+                      value={state.roundWind}
+                      onChange={w => update(p => ({ ...p, roundWind: w }))}
+                      accent="var(--color-porcelain)"
+                      options={WINDS.map(w => ({ value: w, label: WIND_LABELS[w], sub: WIND_CHARS[w] }))}
                     />
-                    <span className="text-sm font-medium" style={{ color: 'var(--color-ink)' }}>Dealer</span>
-                  </label>
-                </div>
+                    <ButtonRow
+                      label="Table minimum"
+                      hint="(fan needed to declare)"
+                      value={state.minimumFan}
+                      onChange={n => update(p => ({ ...p, minimumFan: n }))}
+                      options={MINIMUM_FAN_OPTIONS.map(n => ({
+                        value: n,
+                        label: n === 0 ? 'None' : `${n} fan`,
+                        title: n === 0 ? 'Any winning hand counts' : `Need at least ${n} fan to declare a win`,
+                      }))}
+                    />
+                  </>
+                ) : (
+                  <div>
+                    <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>Role</p>
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={state.isDealer}
+                        onChange={e => update(p => ({ ...p, isDealer: e.target.checked }))}
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: 'var(--color-jade)' }}
+                      />
+                      <span className="text-sm font-medium" style={{ color: 'var(--color-ink)' }}>Dealer</span>
+                    </label>
+                  </div>
+                )}
               </div>
+              {isHK && (
+                <p className="text-xs mt-4" style={{ color: 'var(--color-mist)' }}>
+                  There is no dealer setting here because Hong Kong scoring has no dealer bonus — the dealer pays and collects like everyone else.
+                </p>
+              )}
             </section>
 
             {/* Step 4: Win conditions */}
             <section className="rounded-2xl p-5" style={{ background: '#fff', border: '1px solid var(--color-cream-dark)' }}>
-              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 4 - Win Conditions</h2>
+              <h2 className="text-sm font-semibold mb-4 uppercase tracking-wide" style={{ color: 'var(--color-mist)' }}>Step 4 — Win Conditions</h2>
               <div className="flex flex-wrap gap-5">
-                <div>
-                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>Did you win?</p>
-                  <div className="flex gap-1.5">
-                    {[true, false].map(v => (
-                      <button
-                        key={String(v)}
-                        onClick={() => update(p => ({ ...p, isMahjong: v, isSelfDraw: v ? p.isSelfDraw : false, blessing: v ? p.blessing : 'none' }))}
-                        className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                        style={{
-                          background: state.isMahjong === v ? 'var(--color-jade)' : 'var(--color-cream)',
-                          color: state.isMahjong === v ? '#fff' : 'var(--color-stone)',
-                          border: `1px solid ${state.isMahjong === v ? 'var(--color-jade)' : 'var(--color-cream-dark)'}`,
-                        }}
-                      >
-                        {v ? '✅ Yes - Mahjong!' : '❌ No - Losing hand'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <ButtonRow
+                  label="Did you win?"
+                  value={state.isMahjong}
+                  onChange={v => update(p => ({
+                    ...p,
+                    isMahjong: v,
+                    isSelfDraw: v ? p.isSelfDraw : false,
+                    blessing: v ? p.blessing : 'none',
+                    isConcealedHand: v ? p.isConcealedHand : false,
+                  }))}
+                  options={[
+                    { value: true, label: '✅ Yes — Mahjong!' },
+                    { value: false, label: '❌ No — Losing hand' },
+                  ]}
+                />
 
                 {state.isMahjong && (
-                  <div>
-                    <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>Self-draw (Zi-mo)?</p>
-                    <div className="flex gap-1.5">
-                      {[false, true].map(v => (
-                        <button
-                          key={String(v)}
-                          onClick={() => update(p => ({ ...p, isSelfDraw: v }))}
-                          className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                          style={{
-                            background: state.isSelfDraw === v ? 'var(--color-porcelain)' : 'var(--color-cream)',
-                            color: state.isSelfDraw === v ? '#fff' : 'var(--color-stone)',
-                            border: `1px solid ${state.isSelfDraw === v ? 'var(--color-porcelain)' : 'var(--color-cream-dark)'}`,
-                          }}
-                        >
-                          {v ? '🤚 Self-draw (+0.5 + 100 flat)' : 'Stolen discard'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <ButtonRow
+                    label={isHK ? 'Self-pick (Zi Mo)?' : 'Self-draw (Zi-mo)?'}
+                    value={state.isSelfDraw}
+                    onChange={v => update(p => ({ ...p, isSelfDraw: v }))}
+                    accent="var(--color-porcelain)"
+                    options={[
+                      { value: false, label: isHK ? 'Won on a discard' : 'Stolen discard' },
+                      { value: true, label: isHK ? '🤚 Self-pick (+1 fan)' : '🤚 Self-draw (+0.5 + 100 flat)' },
+                    ]}
+                  />
                 )}
 
-                {state.isMahjong && (
-                  <div>
-                    <p className="text-xs font-medium mb-2" style={{ color: 'var(--color-stone)' }}>
-                      Blessing? <span className="font-normal" style={{ color: 'var(--color-mist)' }}>(rare first-turn win — automatic buan-oh)</span>
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {BLESSING_OPTIONS.map(({ value, label, hint }) => (
-                        <button
-                          key={value}
-                          onClick={() => update(p => ({ ...p, blessing: value }))}
-                          title={hint}
-                          className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                          style={{
-                            background: state.blessing === value ? 'var(--color-jade)' : 'var(--color-cream)',
-                            color: state.blessing === value ? '#fff' : 'var(--color-stone)',
-                            border: `1px solid ${state.blessing === value ? 'var(--color-jade)' : 'var(--color-cream-dark)'}`,
-                          }}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {state.isMahjong && isHK && (
+                  <ButtonRow
+                    label="Concealed hand?"
+                    hint="(門前清)"
+                    value={state.isConcealedHand}
+                    onChange={v => update(p => ({ ...p, isConcealedHand: v }))}
+                    accent="var(--color-porcelain)"
+                    options={[
+                      { value: false, label: 'Took tiles from others' },
+                      { value: true, label: '🔒 Fully concealed (+1 fan)' },
+                    ]}
+                  />
+                )}
+
+                {state.isMahjong && !isHK && (
+                  <ButtonRow
+                    label="Blessing?"
+                    hint="(rare first-turn win — automatic buan-oh)"
+                    value={state.blessing}
+                    onChange={b => update(p => ({ ...p, blessing: b }))}
+                    options={BLESSING_OPTIONS.map(o => ({ value: o.value, label: o.label, title: o.hint }))}
+                  />
                 )}
               </div>
+              {isHK && (
+                <p className="text-xs mt-4" style={{ color: 'var(--color-mist)' }}>
+                  Situational fan — Kong Replacement, Robbing the Kong, Moon Under The Sea and the three Blessings — depend on what happened at the table
+                  rather than on your tiles, so they are not inputs here. They are documented on the{' '}
+                  <a href="/rules" style={{ color: 'var(--color-jade)', textDecoration: 'underline' }}>Rules page</a>.
+                </p>
+              )}
             </section>
 
             {/* Calculate / Reset */}
@@ -409,7 +537,7 @@ export default function CalculatorClient() {
                 <p className="font-semibold" style={{ color: '#B91C1C' }}>❌ {calcError}</p>
               </div>
             ) : result ? (
-              <ScoreDisplay result={result} isDealer={state.isDealer} />
+              <ScoreDisplay result={result} isDealer={state.isDealer} isSelfDraw={state.isSelfDraw} />
             ) : (
               <div className="rounded-2xl p-6 text-center" style={{ background: '#fff', border: '1px solid var(--color-cream-dark)' }}>
                 <p className="text-4xl mb-3">🀄</p>
@@ -420,12 +548,12 @@ export default function CalculatorClient() {
                 <div className="mt-5 pt-4 text-left text-xs" style={{ borderTop: '1px solid var(--color-cream-dark)', color: 'var(--color-stone)' }}>
                   <p className="font-semibold mb-2">Quick guide:</p>
                   <ol className="flex flex-col gap-1.5 list-decimal list-inside">
-                    <li>Choose your seat wind</li>
-                    <li>Pick all 17 tiles (flowers/seasons too)</li>
+                    <li>Pick your style above</li>
+                    <li>Pick all {sizes.winning} tiles (flowers/seasons too)</li>
                     <li>Hit Auto-detect sets</li>
                     <li>Tap your winning tile to mark it ★</li>
-                    <li>Adjust kangs or concealeds if needed</li>
-                    <li>Set win condition, then calculate</li>
+                    <li>{isHK ? 'Set your seat and round wind' : 'Choose your seat wind and role'}</li>
+                    <li>Set win conditions, then calculate</li>
                   </ol>
                 </div>
               </div>
@@ -439,8 +567,7 @@ export default function CalculatorClient() {
         instances={state.instances}
         flowers={state.flowers}
         seasons={state.seasons}
-        isMahjong={state.isMahjong}
-        kangCount={state.groups.filter(g => g.type === 'kang').length}
+        target={tileTarget}
         onRemoveInstance={id => removeInstances([id])}
         onToggleFlower={toggleFlower}
         onToggleSeason={toggleSeason}

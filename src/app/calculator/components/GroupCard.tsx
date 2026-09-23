@@ -1,20 +1,24 @@
-import type { TileGroup, TileInstance, KangType } from '@/types/mahjong';
+import type { TileGroup, TileInstance, KangType, MahjongStyle } from '@/types/mahjong';
 import { getTile } from '@/lib/tiles';
 import MahjongTile from '@/components/MahjongTile';
 
 export default function GroupCard({
-  group, instances,
+  group, instances, style,
   onSetType, onToggleConcealed, onSetKangType,
   onMarkWinning, onRemoveGroup,
 }: {
   group: TileGroup;
   instances: TileInstance[];
+  style: MahjongStyle;
   onSetType: (id: string, type: TileGroup['type']) => void;
   onToggleConcealed: (id: string) => void;
   onSetKangType: (id: string, kt: KangType) => void;
   onMarkWinning: (groupId: string, instanceId: string) => void;
   onRemoveGroup: (id: string) => void;
 }) {
+  // Hong Kong scores concealment once for the whole hand and has no kong
+  // bonuses, so neither per-set control does anything in that style.
+  const showSetLevelOptions = style === 'taiwanese';
   const tiles = group.instanceIds
     .map(iid => instances.find(i => i.instanceId === iid))
     .filter(Boolean) as TileInstance[];
@@ -59,7 +63,7 @@ export default function GroupCard({
           <option value="pair">Pair</option>
         </select>
 
-        {(group.type === 'pong' || group.type === 'kang') && (
+        {showSetLevelOptions && (group.type === 'pong' || group.type === 'kang') && (
           <button
             onClick={() => onToggleConcealed(group.id)}
             className="text-xs px-2 py-1 rounded-md border font-medium transition-colors"
@@ -73,7 +77,7 @@ export default function GroupCard({
           </button>
         )}
 
-        {group.type === 'kang' && (
+        {showSetLevelOptions && group.type === 'kang' && (
           <select
             value={group.kangType}
             onChange={e => onSetKangType(group.id, e.target.value as KangType)}

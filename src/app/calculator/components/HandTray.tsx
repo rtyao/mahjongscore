@@ -3,21 +3,20 @@ import { getTile, FLOWER_TILES, SEASON_TILES } from '@/lib/tiles';
 import MahjongTile from '@/components/MahjongTile';
 
 export default function HandTray({
-  instances, flowers, seasons, isMahjong, kangCount,
+  instances, flowers, seasons, target,
   onRemoveInstance, onToggleFlower, onToggleSeason, onReset,
 }: {
   instances: TileInstance[];
   flowers: number[];
   seasons: number[];
-  isMahjong: boolean;
-  kangCount: number;
+  /** How many tiles this hand should hold, for the current style and kong count. */
+  target: number;
   onRemoveInstance: (id: string) => void;
   onToggleFlower: (v: number) => void;
   onToggleSeason: (v: number) => void;
   onReset: () => void;
 }) {
   const tileCount = instances.length;
-  const target = (isMahjong ? 17 : 16) + kangCount;
   const atTarget = tileCount === target;
   const overTarget = tileCount > target;
   const bonusCount = flowers.length + seasons.length;

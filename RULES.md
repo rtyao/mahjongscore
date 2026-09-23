@@ -1,9 +1,21 @@
-# Filipino-Chinese Mahjong Rules
+# Mahjong Rules
 
-The Taiwanese-derived style played in Philippine Chinese communities.
-This is the source document for the rules. Edit this file to update rules — the website mirrors this content.
+This is the source document for the rules. Edit this file to update them — the website mirrors this content.
 
-> **Heads up:** Rules vary by household. These are based on family memory. If something is wrong or missing, open an [Issue](https://github.com/rtyao/mahjongscore/issues) or use the suggestion form on the site.
+Two styles are covered:
+
+- **Filipino-Chinese** (Taiwanese-derived, played in Philippine Chinese communities) — 16 tiles, 5 sets + a pair, scored as base points multiplied by tai.
+- **Hong Kong** — 13 tiles, 4 sets + a pair, scored as a single fan count read off a payout table.
+
+Everything from *The Tiles* down to *Winning* applies to both. After that each style has its own section.
+
+**Contents**
+
+- [The Tiles](#the-tiles) · [The Four Set Types](#the-four-set-types) · [How a Round Works](#how-a-round-works) · [Winning](#winning)
+- [Filipino-Chinese Style](#filipino-chinese-style--whats-different)
+- [Hong Kong Style](#hong-kong-style)
+
+> **Heads up:** Rules vary by household and by table. The Filipino-Chinese rules here come from family memory. The Hong Kong rules follow the *Hong Kong Mahjong Rule Sheet* v1.0 (April 2025) by /u/danma. If something is wrong or missing, open an [Issue](https://github.com/rtyao/mahjongscore/issues) or use the suggestion form on the site.
 
 ---
 
@@ -220,10 +232,137 @@ When a player is close to a big win, other players have restrictions:
 
 ---
 
-## What's Still Unconfirmed
+## Hong Kong Style
 
-- All honor tiles hand (all winds + all dragons) — limit hand or not?
+A different game from the Filipino-Chinese style, not a variation on it. The tiles are the same; almost nothing else is.
+
+| | Filipino-Chinese | Hong Kong |
+|---|---|---|
+| Hand | 16 tiles, 17 to win — 5 sets + pair | 13 tiles, 14 to win — 4 sets + pair |
+| Scoring | base points × tai multipliers | a single fan count |
+| Payout | formula, floored at 50 and capped at 600 | fan read off a fixed table |
+| Dealer | pays and collects **double** | **no bonus** — pays and collects like everyone else |
+| Losing to a discard | the discarder pays your score | the discarder pays **double**, and pays alone |
+| Round wind | not used | a triplet of it scores fan |
+| Kong bonus | flat 100 / 200 / 400 | none |
+| Concealed | doubles that set's points | 1 fan for the whole hand |
+
+### How fan becomes points
+
+Add up the fan for every feature your hand matches, then read across:
+
+| Fan | Points | Fan | Points |
+|---|---|---|---|
+| 0 | 1 | 7 | 48 |
+| 1 | 2 | 8 | 64 |
+| 2 | 4 | 9 | 96 |
+| 3 | 8 | 10 | 128 |
+| 4 | 16 | 11 | 192 |
+| 5 | 24 | 12 | 256 |
+| 6 | 32 | 13+ | 384 |
+
+**Paying out** — this table uses *discarder pays all*:
+
+- **Self-pick**: all three other players each pay you the point value.
+- **Won on a discard**: only the player who discarded pays, and they pay **double**.
+
+A hand of 0 fan is a *chicken hand* (雞和) and is worth 1 point. Many tables set a **minimum fan** — commonly 3 — below which you are not allowed to declare a win at all. Agree on this before you start.
+
+### Two rules that decide how fan combine
+
+1. **A stronger hand replaces the weaker one in its family; they never stack.** Full Flush replaces Mixed Flush. Big Three Dragons replaces the per-dragon award. All Concealed Triplets replaces All Triplets.
+2. **Mixed Terminals, All Terminals and All Honours already include All Triplets' 3 fan.** Those hands are all-triplet hands by definition, so the 3 fan is baked into their printed value — do not add it again.
+
+Unless a rule says otherwise, triplets and kongs are interchangeable.
+
+### Hand shape
+
+| Fan | Hand | Meaning |
+|---|---|---|
+| 1 | All Sequences (平和) | Every set is a sequence |
+| 3 | All Triplets (對對和) | Every set is a triplet or kong |
+| 8 | ↳ All Concealed Triplets | All triplets, no tiles taken from other players. Only when you self-pick, or the discard completed your pair |
+| 13 | ↳ All Quadruplets | All four sets are kongs |
+
+### Suit
+
+| Fan | Hand | Meaning |
+|---|---|---|
+| 3 | Mixed Flush (混一色) | One suit plus honour tiles |
+| 7 | ↳ Full Flush (清一色) | One suit and nothing else |
+
+### Terminals and honours
+
+| Fan | Hand | Meaning |
+|---|---|---|
+| 4 | Mixed Terminals | Only ones, nines and honours (includes All Triplets' 3 fan) |
+| 13 | ↳ All Terminals | Only ones and nines (includes All Triplets' 3 fan) |
+| 10 | All Honours | Only honour tiles (includes All Triplets' 3 fan) |
+
+### Dragons
+
+| Fan | Hand | Meaning |
+|---|---|---|
+| 1 each | Dragon triplet | A triplet of dragons, scored per triplet |
+| 5 | ↳ Small Three Dragons | Two dragon triplets and a pair of the third |
+| 8 | ↳ Big Three Dragons | Triplets of all three dragons |
+
+### Winds
+
+| Fan | Hand | Meaning |
+|---|---|---|
+| 1 each | Round wind / seat wind triplet | A triplet that is both the round wind **and** your seat wind counts 2 fan |
+| 6 | ↳ Small Four Winds | Three wind triplets and a pair of the fourth |
+| 13 | ↳ Big Four Winds | Triplets of all four winds |
+
+### Flowers and seasons
+
+| Fan | Hand |
+|---|---|
+| 1 | No flowers or seasons at all |
+| 1 each | A flower or season matching your seat number |
+| 2 | All four flowers, or all four seasons |
+| 3 | Seven bonus tiles — you may declare an immediate win on the seventh |
+| 8 | All eight bonus tiles — you may declare an immediate win on the eighth |
+
+Seat numbering is the same as the Filipino-Chinese style: East is 1, South 2, West 3, North 4.
+
+### Win actions
+
+| Fan | Action | Meaning |
+|---|---|---|
+| 1 | Self-Pick (自摸) | You drew your winning tile from the wall |
+| 1 | Concealed Hand (門前清) | You took no tiles from other players |
+| 1 | Robbing the Kong (搶槓) | You won by interrupting another player upgrading a pong to a kong with your winning tile |
+| 1 | Moon Under The Sea (海底撈月) | Your winning tile was the last tile in the wall, or the last discard |
+| 2 | ↳ Win by Kong Replacement (槓上開花) | Your winning tile was the replacement drawn after calling a kong |
+| 9 | ↳ Double Kong Replacement | You called a kong, called a second kong on the replacement, then won on that second replacement |
+
+### Special hands
+
+| Fan | Hand | Meaning |
+|---|---|---|
+| 13 | Blessing of Heaven (天和) | As dealer, your starting hand already wins |
+| 13 | Blessing of Earth (地和) | As a non-dealer, you win on the dealer's first discard |
+| 13 | Blessing of Man (人和) | As a non-dealer, you win on your first turn with a self-pick |
+| 13 | Nine Gates (九蓮寶燈) | 1112345678999 of one suit, plus a 14th tile of that suit |
+| 13 | Thirteen Orphans (十三么) | One of each terminal, wind and dragon, plus a 14th matching one of them |
+| 4 | Seven Pairs (七對子) | Seven **different** pairs — four of a kind is not two pairs. Stacks with All Honours, Mixed Flush and Full Flush. *Only played at some tables.* |
+
+### What the calculator does and doesn't cover
+
+The calculator scores everything it can read off your tiles. Six fan depend on what happened at the table rather than on the hand itself, so there is nothing to detect — **Robbing the Kong, Moon Under The Sea, Win by Kong Replacement, Double Kong Replacement, and the three Blessings**. If one of those applies, add its fan to the calculator's total yourself.
+
+Seven Pairs, Thirteen Orphans and Nine Gates are recognised from your tiles alone, so you do not need to group them into sets first.
 
 ---
 
-*Last updated: June 20, 2026. Source: family knowledge. To suggest a correction, open an [Issue](https://github.com/rtyao/mahjongscore/issues).*
+## What's Still Unconfirmed
+
+- **Filipino-Chinese:** all honor tiles hand (all winds + all dragons) — limit hand or not?
+- **Hong Kong:** the sheet reads "All Flowers **or** All Seasons — 2 fan". The calculator awards 2 fan per completed set, so holding both scores 4. Holding all eight also triggers Eight Flowers, so this only matters in theory.
+- **Hong Kong:** All Sequences is written here as simply "all sets are sequences". Many HK tables add conditions — the pair must not be a dragon, round wind or seat wind, and the winning tile must not complete a closed wait. Confirm with your table.
+
+---
+
+*Last updated: September 21, 2026. Sources: family knowledge (Filipino-Chinese) and the Hong Kong Mahjong Rule Sheet v1.0 by /u/danma (Hong Kong). To suggest a correction, open an [Issue](https://github.com/rtyao/mahjongscore/issues).*
