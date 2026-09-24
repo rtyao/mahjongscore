@@ -325,11 +325,14 @@ export function calculateHongKong(state: CalculatorState): HongKongScoreResult {
     if (state.seasons.includes(seat)) {
       push('Seat Season', 1, 'The season matching your seat number scores 1 fan.');
     }
-    if (state.flowers.length === 4) {
-      push('All Flowers', 2, 'Holding all four flowers scores 2 fan.');
-    }
-    if (state.seasons.length === 4) {
-      push('All Seasons', 2, 'Holding all four seasons scores 2 fan.');
+    // A flat 2 fan for completing either group — holding both still scores 2.
+    const allFlowers = state.flowers.length === 4;
+    const allSeasons = state.seasons.length === 4;
+    if (allFlowers || allSeasons) {
+      const label = allFlowers && allSeasons
+        ? 'All Flowers and All Seasons'
+        : allFlowers ? 'All Flowers' : 'All Seasons';
+      push(label, 2, 'Holding all four flowers, or all four seasons, scores a flat 2 fan. Holding both still scores 2, not 4.');
     }
     if (bonusCount === 7) {
       push('Seven Flowers', 3, 'Seven bonus tiles. You may also declare an immediate win on the seventh.');

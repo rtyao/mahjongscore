@@ -179,6 +179,31 @@ test('all flowers + all seasons = buan-oh', bothSets.isBuanOh && (bothSets.speci
 const r10 = calculateTaiwanese({ ...pingOh, isSelfDraw: true });
 test('go-ki-si-pa floor: sub-50 hand scores 50', r10.isMinimumHand && r10.finalScore === 50, `score=${r10.finalScore}`);
 
+// All honours: only winds and dragons, no suited tiles at all.
+const allHonoursTW = mkState([
+  ['pong', ['wind-1', 'wind-1', 'wind-1']],
+  ['pong', ['wind-2', 'wind-2', 'wind-2']],
+  ['pong', ['dragon-1', 'dragon-1', 'dragon-1']],
+  ['pong', ['dragon-2', 'dragon-2', 'dragon-2']],
+  ['pong', ['wind-3', 'wind-3', 'wind-3']],
+  ['pair', ['dragon-3', 'dragon-3']],
+]);
+const r11 = calculateTaiwanese(allHonoursTW);
+test('all honours = buan-oh', r11.isBuanOh && r11.finalScore === 600, `score=${r11.finalScore} hand=${r11.specialHand}`);
+
+// A hand with any suited tile is not all honours.
+const nearlyAllHonours = mkState([
+  ['pong', ['wind-1', 'wind-1', 'wind-1']],
+  ['pong', ['wind-2', 'wind-2', 'wind-2']],
+  ['pong', ['dragon-1', 'dragon-1', 'dragon-1']],
+  ['pong', ['dragon-2', 'dragon-2', 'dragon-2']],
+  ['chow', c('bamboo-1', 'bamboo-2', 'bamboo-3')],
+  ['pair', ['dragon-3', 'dragon-3']],
+]);
+const r12 = calculateTaiwanese(nearlyAllHonours);
+test('one suited set means the hand is not all honours',
+  !(r12.specialHand ?? '').includes('All honours'), r12.specialHand);
+
 // ═══════════════════════════════════════════════════════════════════
 section('Hong Kong — fan table');
 // ═══════════════════════════════════════════════════════════════════
@@ -416,6 +441,11 @@ test("another player's flower scores nothing", fanFor(h23, 'Seat Flower') === 0)
 
 const h24 = calculateHongKong({ ...hkAllSeq, flowers: [1, 2, 3, 4], seasons: [] });
 test('All Flowers = 2 fan', fanFor(h24, 'All Flowers') === 2, `fan=${h24.fan}`);
+
+// Confirmed: the award is a flat 2 for completing either group, not 2 per group.
+const h24b = calculateHongKong({ ...hkAllSeq, flowers: [1, 2, 3, 4], seasons: [1, 2, 3, 4] });
+test('all flowers AND all seasons is still a flat 2 fan, not 4',
+  fanFor(h24b, 'All Flowers and All Seasons') === 2, `fan=${h24b.fan}`);
 
 const h25 = calculateHongKong({ ...hkAllSeq, flowers: [1, 2, 3, 4], seasons: [1, 2, 3, 4] });
 test('Eight Flowers = 8 fan', fanFor(h25, 'Eight Flowers') === 8, `fan=${h25.fan}`);

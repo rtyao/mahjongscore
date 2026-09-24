@@ -52,8 +52,7 @@ Since v0.3.0 the site covers **two styles**: Filipino-Chinese (the project's rea
 
 ## Open questions / known gaps (as of v0.3.0, September 2026)
 
-- **All honors hand** (Filipino-Chinese): family has no consensus yet — intentionally NOT implemented. Ask Caleb, don't guess.
-- **HK ambiguities** recorded in RULES.md: whether "All Flowers **or** All Seasons" awards 2 fan once or per set (the engine awards per set), and whether All Sequences needs the extra conditions many HK tables add.
+- **No open rule questions.** All-honours (Filipino-Chinese, now buan-oh), HK flower stacking (a flat 2 fan) and All Sequences conditions (none — as written) were all confirmed by Caleb on 2026-09-21. The resolved list is at the foot of RULES.md.
 - **Not deployed.** No GitHub Pages/Vercel config yet. Needs `output: 'export'` consideration for static hosting. This is the biggest missing piece.
 - Formspree form ID on /suggest is a placeholder — the form doesn't send.
 - Manual kang grouping UI: "+ Add group manually" creates an empty group with no way to add tiles into it (known bug since v0.2.0).

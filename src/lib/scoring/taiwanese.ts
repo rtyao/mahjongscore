@@ -8,10 +8,10 @@
  *   2. rawScore = ceil(basePoints × 4 / 10) × 10   (round up to nearest 10)
  *   3. score = rawScore + 20  (if mahjong win)
  *   4. score = score × 2^tai  (tai = multiplier count)
- *   5. Floor at 50 (go-ki-si-pa), cap at 600 (buan-oh)
+ *   5. Floor at 50 (go-ki-si-pa 五起四趴), cap at 600 (buan-oh 滿胡, also written 滿湖)
  *   6. Flat bonuses (kang types, zi-mo) are added AFTER and paid separately by each player
  *
- * SPECIAL CASE — ping-oh: if basePoints === 0, skip formula → 300 flat (600 for dealer)
+ * SPECIAL CASE — ping-oh 平胡: if basePoints === 0, skip formula → 300 flat (600 for dealer)
  *
  * BASE POINTS per set:
  *   Honor/terminal pong:  1 pt (×2 if concealed)
@@ -49,6 +49,7 @@
  *   Small winds (3 wind pongs incl. own seat wind + pair of 4th wind)
  *   Big three dragons (pong all 3 dragons)
  *   Four kangs
+ *   All honours (only winds and dragons, no suited tiles)
  *   4 tai (score naturally exceeds 600 via formula)
  */
 
@@ -158,6 +159,11 @@ function isAllTerminals(sets: CompletedSet[]): boolean {
   // A chow always contains non-terminal tiles, so a true all-terminal hand has none.
   // Each remaining set is all copies of one tile, so its representative tile decides.
   return sets.length > 0 && sets.every(s => s.type !== 'chow' && s.tile.isTerminal);
+}
+
+function isAllHonours(sets: CompletedSet[]): boolean {
+  // No chow guard needed: a chow's tiles are always suited, never honours.
+  return sets.length > 0 && sets.every(s => s.tile.isHonor);
 }
 
 function isBigThreeDragons(sets: CompletedSet[]): boolean {
@@ -308,7 +314,7 @@ export function calculateTaiwanese(state: CalculatorState): TaiwaneseScoreResult
       breakdown,
       flatBonuses,
       nearPingOh: false,
-      specialHand: 'Ping-oh (All-run hand) — 300 / 600',
+      specialHand: 'Ping-oh 平胡 (All-run hand) — 300 / 600',
     };
   }
 
@@ -316,15 +322,17 @@ export function calculateTaiwanese(state: CalculatorState): TaiwaneseScoreResult
   let specialHand: string | undefined;
   if (state.isMahjong) {
     const kangCount = completedSets.filter(s => s.type === 'kang').length;
-    if (state.blessing === 'heaven')                      specialHand = 'Blessing of Heaven — automatic buan-oh';
-    else if (state.blessing === 'earth')                  specialHand = 'Blessing of Earth — automatic buan-oh';
-    else if (hasAllFlowers && hasAllSeasons)              specialHand = 'All flowers + all seasons — automatic buan-oh';
-    else if (flushType === 'full')                        specialHand = 'Full flush — automatic buan-oh';
-    else if (isAllTerminals(completedSets))               specialHand = 'All terminals — automatic buan-oh';
-    else if (isBigWinds(completedSets))                   specialHand = 'Big winds — automatic buan-oh';
-    else if (isSmallWinds(completedSets, seatWindValue))  specialHand = 'Small winds — automatic buan-oh';
-    else if (isBigThreeDragons(completedSets))            specialHand = 'Big three dragons — automatic buan-oh';
-    else if (kangCount >= 4)                              specialHand = 'Four kangs — automatic buan-oh';
+    if (state.blessing === 'heaven')                      specialHand = 'Blessing of Heaven — automatic buan-oh 滿胡';
+    else if (state.blessing === 'earth')                  specialHand = 'Blessing of Earth — automatic buan-oh 滿胡';
+    else if (hasAllFlowers && hasAllSeasons)              specialHand = 'All flowers + all seasons — automatic buan-oh 滿胡';
+    else if (flushType === 'full')                        specialHand = 'Full flush — automatic buan-oh 滿胡';
+    else if (isAllTerminals(completedSets))               specialHand = 'All terminals — automatic buan-oh 滿胡';
+    else if (isBigWinds(completedSets))                   specialHand = 'Big winds — automatic buan-oh 滿胡';
+    else if (isSmallWinds(completedSets, seatWindValue))  specialHand = 'Small winds — automatic buan-oh 滿胡';
+    else if (isBigThreeDragons(completedSets))            specialHand = 'Big three dragons — automatic buan-oh 滿胡';
+    else if (kangCount >= 4)                              specialHand = 'Four kangs — automatic buan-oh 滿胡';
+    // Checked last so the more specific wind and dragon hands keep their names.
+    else if (isAllHonours(completedSets))                 specialHand = 'All honours — automatic buan-oh 滿胡';
   }
 
   if (specialHand) {

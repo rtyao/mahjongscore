@@ -19,9 +19,35 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
-    version: 'v0.3.0',
+    version: 'v0.3.1',
     date: 'September 2026',
     status: 'current',
+    summary: 'Short patch that closes out every open rule question on the board — including one that had been sitting unresolved since the first build.',
+    liked: [
+      'The "unconfirmed" list hit zero for the first time since the project started',
+      'Flagging the flower rule as a question instead of quietly guessing — the guess would have been wrong',
+      'The Chinese characters are on the page now, not just the phonetic spellings',
+    ],
+    didntLike: [
+      'The flower bug means every all-eight-bonus-tile hand scored 2 fan too high in v0.3.0',
+      'Still not deployed',
+    ],
+    added: [
+      'All honours (only winds and dragons) is a limit hand — automatic buan-oh',
+      'Fixed: "All Flowers or All Seasons" is a flat 2 fan, not 2 per completed group',
+      'Confirmed All Sequences has no extra conditions, and that 1 fan alone is usually under a table minimum',
+      'Chinese names throughout: buan-oh 滿胡, go-ki-si-pa 五起四趴, ping-oh 平胡',
+    ],
+    missing: [
+      'Deployment — still the only thing between this and people using it',
+      'Rules page tabs instead of one long scroll',
+      'Kang grouping UI bug (carried from v0.2.1)',
+    ],
+  },
+  {
+    version: 'v0.3.0',
+    date: 'September 2026',
+    status: 'past',
     summary: 'Hong Kong style added. The Filipino-Chinese style is why this site exists, but Hong Kong is the version most people mean when they say "mahjong" — so the calculator now scores both.',
     liked: [
       'Two separate engines is far clearer than one engine full of mode flags',

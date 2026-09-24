@@ -398,13 +398,13 @@ export default function RulesPage() {
           <H3>Special Hands & Limit Hands</H3>
           <P>Some hands skip the formula entirely or automatically cap at the maximum.</P>
 
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-mist)' }}>Ping-oh — the all-run hand</p>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-mist)' }}>Ping-oh 平胡 — the all-run hand</p>
           <P>
             If your base points total zero (all chows, no scoring pair, no flowers or seasons, no special win condition),
             the formula is skipped entirely. Ping-oh pays a flat <strong>300 / 600 for dealer</strong>.
           </P>
 
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2 mt-4" style={{ color: 'var(--color-mist)' }}>Buan-oh — limit hands (600 / 1,200 for dealer)</p>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2 mt-4" style={{ color: 'var(--color-mist)' }}>Buan-oh 滿胡 — limit hands (600 / 1,200 for dealer)</p>
           <P>The following hands automatically pay the maximum, regardless of the formula:</P>
           <ul className="mb-3">
             <Li><strong>Blessing of Heaven</strong> — the dealer wins with their opening hand (first draw).</Li>
@@ -417,11 +417,8 @@ export default function RulesPage() {
             <Li><strong>4 tai</strong> — reaching 4 tai automatically caps the hand at buan-oh.</Li>
             <Li><strong>4 kangs</strong> — having 4 kangs declared in one hand is an automatic buan-oh.</Li>
             <Li><strong>All flowers + all seasons</strong> — collecting all 8 bonus tiles is an automatic buan-oh.</Li>
+            <Li><strong>All honours</strong> — only winds and dragons, with no suited tiles at all.</Li>
           </ul>
-          <Warn>
-            <strong>All honor tiles</strong> (all winds and dragons, no suited tiles) — no consensus on this one yet.
-            We&apos;ll update when confirmed.
-          </Warn>
         </Card>
 
         {/* Protective rules */}
@@ -447,8 +444,8 @@ export default function RulesPage() {
         <Card>
           <H3>Score Floor & Cap</H3>
           <ScoreTable rows={[
-            { label: 'Go-ki-si-pa — minimum score', value: '50 / 100 dealer', note: 'any hand under 50 is bumped to 50' },
-            { label: 'Buan-oh — maximum score', value: '600 / 1,200 dealer', note: 'any hand at or over 600 is capped' },
+            { label: 'Go-ki-si-pa 五起四趴 — minimum score', value: '50 / 100 dealer', note: 'any hand under 50 is bumped to 50' },
+            { label: 'Buan-oh 滿胡 — maximum score', value: '600 / 1,200 dealer', note: 'any hand at or over 600 is capped' },
           ]} />
         </Card>
 
@@ -526,7 +523,7 @@ export default function RulesPage() {
         <Card>
           <H3>Hand shape</H3>
           <ScoreTable rows={[
-            { label: 'All Sequences (平和)', value: '1 fan', note: 'every set is a sequence' },
+            { label: 'All Sequences (平和)', value: '1 fan', note: 'every set is a sequence — usually below a table minimum on its own' },
             { label: 'All Triplets (對對和)', value: '3 fan', note: 'every set is a triplet or kong' },
             { label: '↳ All Concealed Triplets', value: '8 fan', note: 'no tiles taken from others; self-pick, or the discard completed your pair' },
             { label: '↳ All Quadruplets', value: '13 fan', note: 'all four sets are kongs' },
@@ -561,7 +558,7 @@ export default function RulesPage() {
           <ScoreTable rows={[
             { label: 'No flowers or seasons at all', value: '1 fan' },
             { label: 'Flower or season matching your seat', value: '1 fan each', note: 'East 1, South 2, West 3, North 4' },
-            { label: 'All four flowers, or all four seasons', value: '2 fan' },
+            { label: 'All four flowers, or all four seasons', value: '2 fan', note: 'a flat 2 — holding both still scores 2' },
             { label: 'Seven bonus tiles', value: '3 fan', note: 'you may declare an immediate win on the seventh' },
             { label: 'All eight bonus tiles', value: '8 fan', note: 'you may declare an immediate win on the eighth' },
           ]} />

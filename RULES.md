@@ -88,8 +88,8 @@ A complete hand = **5 sets + 1 pair = 17 tiles**.
 2. `rawScore = ceil(basePoints × 4 / 10) × 10` — round up to nearest 10
 3. Add 20 (the Mahjong win bonus)
 4. Multiply by `2^tai` — each tai doubles the score
-5. **Floor at 50** (Go-ki-si-pa) — hands under 50 are bumped to 50
-6. **Cap at 600** (Buan-oh) — hands at or over 600 are capped at 600
+5. **Floor at 50** (Go-ki-si-pa 五起四趴) — hands under 50 are bumped to 50
+6. **Cap at 600** (Buan-oh 滿胡) — hands at or over 600 are capped at 600
 7. Flat bonuses are paid **separately** by each player, on top of the formula score
 
 **Dealer rule**: the dealer (East wind) always pays and receives **double**.
@@ -187,13 +187,13 @@ Paid **separately** by each player, not part of the formula.
 
 ## Special Hands & Limit Hands
 
-### Ping-oh — the all-run hand
+### Ping-oh 平胡 — the all-run hand
 
 If your base points total zero (all chows, non-scoring pair, no flowers/seasons, no special win condition), the formula is skipped entirely.
 
 **Ping-oh pays a flat 300 / 600 for dealer.**
 
-### Buan-oh — limit hands (600 / 1,200 for dealer)
+### Buan-oh 滿胡 — limit hands (600 / 1,200 for dealer)
 
 The following hands automatically pay the maximum:
 
@@ -208,9 +208,8 @@ The following hands automatically pay the maximum:
 | **Small winds** | Pong of 3 winds (one must be your own seat wind) + pair of the 4th wind |
 | **Big three dragons** | Pong of all 3 dragons |
 | **Four kangs** | 4 declared kangs in one hand |
+| **All honours** | Only winds and dragons — no suited tiles at all |
 | **4 tai** | Any hand reaching 4 tai |
-
-> **All honor tiles** (all winds + dragons, no suited tiles) — no consensus yet. Will update when confirmed.
 
 ---
 
@@ -218,8 +217,8 @@ The following hands automatically pay the maximum:
 
 | Name | Amount | Notes |
 |---|---|---|
-| **Go-ki-si-pa** (minimum) | 50 / 100 dealer | Any hand under 50 is bumped to 50 |
-| **Buan-oh** (maximum) | 600 / 1,200 dealer | Any hand at or over 600 is capped |
+| **Go-ki-si-pa 五起四趴** (minimum) | 50 / 100 dealer | Any hand under 50 is bumped to 50 |
+| **Buan-oh 滿胡** (maximum) | 600 / 1,200 dealer | Any hand at or over 600 is capped |
 
 ---
 
@@ -279,7 +278,7 @@ Unless a rule says otherwise, triplets and kongs are interchangeable.
 
 | Fan | Hand | Meaning |
 |---|---|---|
-| 1 | All Sequences (平和) | Every set is a sequence |
+| 1 | All Sequences (平和) | Every set is a sequence. Worth only 1 fan, which on its own is usually below a table's minimum — see the note on minimum fan above |
 | 3 | All Triplets (對對和) | Every set is a triplet or kong |
 | 8 | ↳ All Concealed Triplets | All triplets, no tiles taken from other players. Only when you self-pick, or the discard completed your pair |
 | 13 | ↳ All Quadruplets | All four sets are kongs |
@@ -321,7 +320,7 @@ Unless a rule says otherwise, triplets and kongs are interchangeable.
 |---|---|
 | 1 | No flowers or seasons at all |
 | 1 each | A flower or season matching your seat number |
-| 2 | All four flowers, or all four seasons |
+| 2 | All four flowers, or all four seasons — a flat 2, so holding both still scores 2 |
 | 3 | Seven bonus tiles — you may declare an immediate win on the seventh |
 | 8 | All eight bonus tiles — you may declare an immediate win on the eighth |
 
@@ -359,9 +358,11 @@ Seven Pairs, Thirteen Orphans and Nine Gates are recognised from your tiles alon
 
 ## What's Still Unconfirmed
 
-- **Filipino-Chinese:** all honor tiles hand (all winds + all dragons) — limit hand or not?
-- **Hong Kong:** the sheet reads "All Flowers **or** All Seasons — 2 fan". The calculator awards 2 fan per completed set, so holding both scores 4. Holding all eight also triggers Eight Flowers, so this only matters in theory.
-- **Hong Kong:** All Sequences is written here as simply "all sets are sequences". Many HK tables add conditions — the pair must not be a dragon, round wind or seat wind, and the winning tile must not complete a closed wait. Confirm with your table.
+Nothing outstanding right now. Previously open questions, all since resolved:
+
+- ~~All honour tiles (Filipino-Chinese) — limit hand or not?~~ **Confirmed buan-oh.**
+- ~~Whether "All Flowers or All Seasons" awards 2 fan once or per group.~~ **Confirmed a flat 2.**
+- ~~Whether All Sequences needs the extra conditions some HK tables add.~~ **Confirmed as written: all sets are sequences, 1 fan.**
 
 ---
 

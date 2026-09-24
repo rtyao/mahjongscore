@@ -19,11 +19,11 @@ export default function TaiwaneseScorePanel({ result, isDealer }: { result: Taiw
     : 'var(--color-ink)';
 
   const handLabel = result.isPingOh
-    ? '🀄 Ping-oh — All-run hand!'
+    ? '🀄 Ping-oh 平胡 — All-run hand!'
     : result.isBuanOh
-    ? `🏆 ${result.specialHand ?? 'Buan-oh — Limit hand!'}`
+    ? `🏆 ${result.specialHand ?? 'Buan-oh 滿胡 — Limit hand!'}`
     : result.isMinimumHand
-    ? '🐔 Go-ki-si-pa — Minimum win'
+    ? '🐔 Go-ki-si-pa 五起四趴 — Minimum win'
     : '✅ Valid hand';
 
   // Formula intermediate values, shown at the bottom of the panel

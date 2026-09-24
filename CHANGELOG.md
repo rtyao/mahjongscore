@@ -5,6 +5,38 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.3.1] - 2026-09-21 - Rule confirmations and Chinese names
+
+### Reflection
+
+Short patch, but it closes out every open rule question on the board. The all-honours hand had been marked "no consensus" since v0.1.0 — it's a buan-oh. And the two ambiguities I'd flagged when adding Hong Kong both got answered, one of which meant the engine was wrong.
+
+Also added the Chinese for the terms we'd only been writing phonetically. Worth having on the page — the phonetic spellings are how the words sound in the family, but the characters are how you'd look them up.
+
+### What changed
+
+**Filipino-Chinese**
+- All honours (only winds and dragons, no suited tiles) is now a limit hand — automatic buan-oh
+- Chinese names added throughout: buan-oh 滿胡 (also written 滿湖), go-ki-si-pa 五起四趴, ping-oh 平胡
+
+**Hong Kong**
+- Fixed: "All Flowers or All Seasons" is a flat 2 fan. The engine had been awarding 2 per completed group, so holding all eight scored 2 too many
+- Confirmed All Sequences is exactly as the sheet writes it — no extra conditions on the pair or the wait. Noted that 1 fan on its own is usually under a table's minimum
+
+**Docs**
+- Every previously open rule question resolved; RULES.md now lists them struck through rather than pending
+
+### What I liked
+- The "unconfirmed" list going to zero for the first time since the project started
+- Having flagged the flower rule as a question rather than quietly guessing — the guess would have been wrong
+
+### Still open / coming next
+- Deployment. Still the only thing between this and people using it
+- Rules page tabs instead of one long scroll
+- Kang grouping UI bug (carried from v0.2.1)
+
+---
+
 ## [v0.3.0] - 2026-09-21 - Hong Kong style
 
 ### Reflection
