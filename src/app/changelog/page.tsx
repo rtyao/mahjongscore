@@ -19,9 +19,36 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: 'v0.3.2',
+    date: 'October 2026',
+    status: 'current',
+    summary: 'The site is live. Hosted on Vercel and connected to the repo, so every push publishes itself. Deployment had been the biggest open item since the first build.',
+    liked: [
+      'Zero config — Next.js on Vercel needed no changes to the repo at all',
+      'Every push to main now rebuilds and publishes the live site by itself',
+      'Production build checked out: no console errors, and the mobile layout holds at phone width',
+    ],
+    didntLike: [
+      'Still on the free .vercel.app URL — mahjongscore.me is not bought yet',
+      'A push is now a publish, which is worth being more careful about',
+    ],
+    added: [
+      'Live at mahjongscorer.vercel.app',
+      'Automatic deploys from the main branch',
+      'Branch previews — work in progress gets its own URL before it hits the real site',
+    ],
+    missing: [
+      'Buy mahjongscore.me and point it at Vercel',
+      'Rules page tabs instead of one long scroll',
+      'Kang grouping UI bug (carried from v0.2.1)',
+      'Illustrated tile art',
+      'Share-a-hand feature',
+    ],
+  },
+  {
     version: 'v0.3.1',
     date: 'September 2026',
-    status: 'current',
+    status: 'past',
     summary: 'Short patch that closes out every open rule question on the board — including one that had been sitting unresolved since the first build.',
     liked: [
       'The "unconfirmed" list hit zero for the first time since the project started',

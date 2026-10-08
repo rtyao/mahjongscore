@@ -5,6 +5,25 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.3.2] - 2026-10-07 - Live
+
+The site is deployed: **https://mahjongscorer.vercel.app**
+
+Hosted on Vercel, connected to this repo. Every push to `main` rebuilds and publishes the live site automatically — which means a push is now a publish, not just a save.
+
+Verified on the production build: home, calculator and rules all render, the style switcher hydrates and works, no console errors, and the mobile layout holds up at phone width.
+
+Deployment had been the biggest open item since v0.1.0. Nothing is standing between this and people using it now, apart from the custom domain.
+
+### Still open / coming next
+- Buy `mahjongscore.me` and point it at Vercel
+- Rules page tabs instead of one long scroll
+- Kang grouping UI bug (carried from v0.2.1)
+- Illustrated tile art
+- Share-a-hand feature
+
+---
+
 ## [v0.3.1] - 2026-09-21 - Rule confirmations and Chinese names
 
 ### Reflection

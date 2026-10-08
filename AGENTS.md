@@ -12,7 +12,11 @@ Read this before making changes. It encodes decisions and context that are not o
 
 ## What this project is
 
-**Mahjong Score** (mahjongscore.me, not yet deployed) documents and preserves the Filipino-Chinese (Taiwanese-derived) Mahjong variant played in Philippine Chinese communities. Two purposes: (1) a rules guide, (2) a hand score calculator — the main feature. Repo: github.com/rtyao/mahjongscore.
+**Mahjong Score** documents and preserves the Filipino-Chinese (Taiwanese-derived) Mahjong variant played in Philippine Chinese communities. Two purposes: (1) a rules guide, (2) a hand score calculator — the main feature.
+
+- Repo: github.com/rtyao/mahjongscore
+- Live: https://mahjongscorer.vercel.app (Vercel, zero-config, **auto-deploys on every push to `main`** — a push is a publish, so treat `main` accordingly)
+- `mahjongscore.me` is the eventual custom domain; not bought or pointed yet
 
 Since v0.3.0 the site covers **two styles**: Filipino-Chinese (the project's reason for existing) and Hong Kong (added so the site is useful to more players before launch). They share tiles and the hand-building UI and nothing else.
 
@@ -53,7 +57,7 @@ Since v0.3.0 the site covers **two styles**: Filipino-Chinese (the project's rea
 ## Open questions / known gaps (as of v0.3.0, September 2026)
 
 - **No open rule questions.** All-honours (Filipino-Chinese, now buan-oh), HK flower stacking (a flat 2 fan) and All Sequences conditions (none — as written) were all confirmed by Caleb on 2026-09-21. The resolved list is at the foot of RULES.md.
-- **Not deployed.** No GitHub Pages/Vercel config yet. Needs `output: 'export'` consideration for static hosting. This is the biggest missing piece.
+- Custom domain `mahjongscore.me` not purchased or connected yet.
 - Formspree form ID on /suggest is a placeholder — the form doesn't send.
 - Manual kang grouping UI: "+ Add group manually" creates an empty group with no way to add tiles into it (known bug since v0.2.0).
 - Auto-detect fails on 16-tile non-winning hands (only handles complete winning shapes).
